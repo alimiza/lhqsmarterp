@@ -1,0 +1,43 @@
+{% extends "smartapp/templates/dashboard_layout.html" %}
+
+{% block title %}Dashboard Guru — SmartApp{% endblock %}
+{% block dashboard_badge %}Guru{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+	<h1 class="text-2xl font-bold text-gray-900">Dashboard Guru</h1>
+	<p class="text-sm text-gray-500 mt-1">Jadwal mengajar, presensi, dan data kelas hari ini</p>
+</div>
+
+<!-- Presensi GPS Card -->
+<div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6">
+	<div class="flex items-center gap-3 mb-4">
+		<div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+			<i class="fa-solid fa-location-dot text-green-600"></i>
+		</div>
+		<div>
+			<h2 class="text-sm font-bold text-gray-900">Presensi Hari Ini</h2>
+			<p class="text-xs text-gray-400" id="presensi-status">Belum Absen</p>
+		</div>
+		<div class="ml-auto">
+			<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600" id="location-badge">
+				<i class="fa-solid fa-satellite-dish mr-1 text-xs"></i> Mendeteksi Lokasi...
+			</span>
+		</div>
+	</div>
+	<div class="flex gap-3">
+		<button id="btn-check-in" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors">
+			<i class="fa-solid fa-sign-in-alt mr-1"></i> Presensi Masuk
+		</button>
+		<button id="btn-check-out" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors" disabled>
+			<i class="fa-solid fa-sign-out-alt mr-1"></i> Presensi Pulang
+		</button>
+	</div>
+</div>
+
+<!-- Placeholder -->
+<div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400">
+	<i class="fa-solid fa-calendar-days text-4xl mb-3"></i>
+	<p class="text-sm">Jadwal mengajar, absensi murid, jurnal, dan penilaian akan hadir di Fase 3.</p>
+</div>
+{% endblock %}

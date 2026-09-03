@@ -253,3 +253,10 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+# After migrate: seed roles, dashboard types, and access settings
+after_migrate = "smartapp.setup.setup_roles_and_dashboards"
+
+# Website route rules: map kebab-case URL to filesystem path
+website_route_rules = [
+	{"from_route": "/dashboard/wali-santri", "to_route": "dashboard/wali_santri"},
+]

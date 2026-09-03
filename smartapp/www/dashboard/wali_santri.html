@@ -1,0 +1,32 @@
+{% extends "smartapp/templates/dashboard_layout.html" %}
+
+{% block title %}Dashboard Wali Santri — SmartApp{% endblock %}
+{% block dashboard_badge %}Wali Santri{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+	<h1 class="text-2xl font-bold text-gray-900">Dashboard Wali Santri</h1>
+	<p class="text-sm text-gray-500 mt-1">Perkembangan, kehadiran, dan tagihan putra/putri Anda</p>
+</div>
+
+<!-- Child Switcher (populated by JS if multi-child) -->
+<div id="child-switcher" class="flex gap-2 mb-6 overflow-x-auto pb-1" style="display:none !important;">
+</div>
+
+<!-- Profile Card -->
+<div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6 flex items-center gap-4">
+	<div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-2xl text-blue-500">
+		<i class="fa-solid fa-user-graduate"></i>
+	</div>
+	<div>
+		<h2 class="text-lg font-bold text-gray-900" id="child-name">—</h2>
+		<p class="text-sm text-gray-500" id="child-class">Kelas / Halaqah</p>
+	</div>
+</div>
+
+<!-- Placeholder -->
+<div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400">
+	<i class="fa-solid fa-child-reaching text-4xl mb-3"></i>
+	<p class="text-sm">Progress hafalan, kehadiran, tagihan SPP, dan unduh PDF akan hadir di Fase 4.</p>
+</div>
+{% endblock %}
