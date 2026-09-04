@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2026-09-03 02:00:00.000000",
+ "creation": "2026-09-03 02:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -17,18 +17,16 @@
    "reqd": 1
   }
  ],
- "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2026-09-03 02:00:00.000000",
+ "modified": "2026-09-04 09:12:19.731744",
  "modified_by": "Administrator",
  "module": "Smart ERP LHQ",
  "name": "SmartApp Dashboard Item",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
- "track_changes": 0
+ "states": []
 }
-

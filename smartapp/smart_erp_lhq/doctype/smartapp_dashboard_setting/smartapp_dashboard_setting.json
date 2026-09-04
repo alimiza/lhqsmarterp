@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "creation": "2026-09-03 01:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "access_rules"
+ ],
+ "fields": [
+  {
+   "fieldname": "access_rules",
+   "fieldtype": "Table",
+   "label": "Access Rules",
+   "options": "SmartApp Dashboard Access"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-04 09:12:50.567437",
+ "modified_by": "Administrator",
+ "module": "Smart ERP LHQ",
+ "name": "SmartApp Dashboard Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

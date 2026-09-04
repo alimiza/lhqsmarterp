@@ -1,133 +1,189 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>{{ title }}</title>
-	<meta name="description" content="Sistem manajemen lembaga pendidikan terpadu untuk pesantren dan sekolah Islam." />
-	<meta name="theme-color" content="#1d4ed8" />
+<!-- ... existing code ... -->
+    <title>{{ title }}</title>
+    <meta name="description" content="Smart ERP Little Haffidz Qur'an" />
+    <meta name="theme-color" content="#581c87" />
 
-	<script src="https://cdn.tailwindcss.com"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-	<style>
-		.hero-gradient { background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%); }
-		.feature-card { transition: box-shadow 0.2s ease, transform 0.15s ease; }
-		.feature-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.1); transform: translateY(-2px); }
-	</style>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            600: '#9333ea',
+                            700: '#7e22ce',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                            dark: '#3b0764',
+                        },
+                        gold: {
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        .hero-purple { 
+            background: linear-gradient(135deg, #3b0764 0%, #581c87 50%, #7e22ce 100%); 
+        }
+        .feature-card { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .feature-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 12px 25px -5px rgba(88, 28, 135, 0.15), 0 8px 10px -6px rgba(88, 28, 135, 0.1);
+        }
+        .islamic-pattern {
+            background-color: #3b0764;
+            background-image: radial-gradient(rgba(250, 204, 21, 0.12) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-purple-50/20 text-gray-800 font-sans antialiased min-h-screen flex flex-col justify-between">
 
-	<!-- Navbar -->
-	<nav class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="flex items-center justify-between h-16">
-				<a href="/" class="text-blue-700 font-bold text-xl tracking-tight">
-					<i class="fa-solid fa-graduation-cap mr-1"></i> SmartApp
-				</a>
-				<div class="flex items-center gap-3">
-					{% if is_logged_in %}
-					<a href="{{ default_dashboard_route }}"
-					   class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-						<i class="fa-solid fa-grid-2 mr-1"></i> Lanjut ke Dashboard Saya
-					</a>
-					{% else %}
-					<a href="/login"
-					   class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-						<i class="fa-solid fa-right-to-bracket mr-1"></i> Masuk ke Sistem
-					</a>
-					{% endif %}
-				</div>
-			</div>
-		</div>
-	</nav>
+    <!-- Navbar -->
+    <nav id="mainNav" class="bg-white/95 backdrop-blur-md border-b border-purple-100 sticky top-0 z-40 transition-shadow duration-300">
+<!-- ... existing code ... -->
+    <!-- Hero Section -->
+    <section class="hero-purple islamic-pattern text-white py-20 px-4 relative overflow-hidden">
+        <!-- Subtle Glow Effect -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-	<!-- Hero -->
-	<section class="hero-gradient text-white py-20 px-4">
-		<div class="max-w-4xl mx-auto text-center">
-			<div class="inline-flex items-center gap-2 bg-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-				<i class="fa-solid fa-star text-yellow-300 text-xs"></i>
-				Sistem Manajemen Lembaga Pendidikan
-			</div>
-			<h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-5">
-				Kelola Pesantren & Sekolah<br />dengan <span class="text-yellow-300">Lebih Cerdas</span>
-			</h1>
-			<p class="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
-				SmartApp mengintegrasikan manajemen santri, keuangan, presensi guru, dan laporan akademik dalam satu platform terpadu.
-			</p>
-			{% if is_logged_in %}
-			<a href="{{ default_dashboard_route }}"
-			   class="inline-flex items-center gap-2 bg-white text-blue-700 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-				<i class="fa-solid fa-grid-2"></i> Buka Dashboard Saya
-			</a>
-			{% else %}
-			<a href="/login"
-			   class="inline-flex items-center gap-2 bg-white text-blue-700 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-				<i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
-			</a>
-			{% endif %}
-		</div>
-	</section>
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center gap-2 bg-purple-950/60 border border-gold-400/30 text-gold-300 text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
+                <i class="fa-solid fa-star text-gold-400 text-xs"></i>
+                <span>Smart ERP Little Haffidz Qur'an</span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight mb-6 tracking-tight">
+                Kelola Lembaga Pendidikan<br />dengan <span class="text-gold-400 drop-shadow-sm">Lebih Cerdas & Terpadu</span>
+            </h1>
+            
+            <p class="text-base sm:text-lg text-purple-100/90 max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+                Smart ERP mengintegrasikan manajemen santri, keuangan, presensi guru, dan laporan akademik dalam satu platform terpadu.
+            </p>
 
-	<!-- Features -->
-	<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-		<h2 class="text-2xl font-bold text-gray-900 text-center mb-10">Fitur Unggulan</h2>
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% if is_logged_in %}
+            <a href="{{ default_dashboard_route }}"
+               class="inline-flex items-center gap-2.5 bg-gold-400 hover:bg-gold-500 text-gray-900 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-gold-500/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <i class="fa-solid fa-grid-2"></i> Buka Dashboard Saya
+            </a>
+            {% else %}
+            <a href="/login"
+               class="inline-flex items-center gap-2.5 bg-gold-400 hover:bg-gold-500 text-gray-900 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-gold-500/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
+            </a>
+            {% endif %}
+        </div>
+    </section>
 
-			<div class="feature-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-				<div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-					<i class="fa-solid fa-chart-line text-blue-600 text-xl"></i>
-				</div>
-				<h3 class="font-bold text-gray-900 mb-2">Dashboard Founder</h3>
-				<p class="text-sm text-gray-500">Pantau keuangan, pertumbuhan murid, dan KPI lembaga secara real-time.</p>
-			</div>
+    <!-- Features Section -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-12">
+            <span class="text-gold-600 font-semibold text-sm uppercase tracking-wider">Layanan Utama</span>
+            <h2 class="text-3xl font-bold text-brand-900 mt-1">Fitur Unggulan</h2>
+            <div class="w-16 h-1 bg-gold-500 mx-auto mt-3 rounded-full"></div>
+        </div>
 
-			<div class="feature-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-				<div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-					<i class="fa-solid fa-location-dot text-green-600 text-xl"></i>
-				</div>
-				<h3 class="font-bold text-gray-900 mb-2">Presensi GPS Guru</h3>
-				<p class="text-sm text-gray-500">Absensi berbasis geofencing dengan validasi lokasi menggunakan Haversine Formula.</p>
-			</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-			<div class="feature-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-				<div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-					<i class="fa-solid fa-money-bill-wave text-purple-600 text-xl"></i>
-				</div>
-				<h3 class="font-bold text-gray-900 mb-2">Manajemen SPP</h3>
-				<p class="text-sm text-gray-500">Tagihan, pembayaran, dan aging piutang terintegrasi dengan ERPNext.</p>
-			</div>
+            <div class="feature-card bg-white rounded-2xl p-6 border border-purple-100 shadow-sm relative overflow-hidden group">
+                <div class="w-12 h-12 bg-purple-50 text-brand-800 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-800 group-hover:text-gold-400 transition-colors">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <h3 class="font-bold text-brand-900 text-lg mb-2">Dashboard Founder</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">Pantau keuangan, pertumbuhan murid, dan KPI lembaga secara real-time.</p>
+            </div>
 
-			<div class="feature-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-				<div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
-					<i class="fa-solid fa-book-quran text-yellow-600 text-xl"></i>
-				</div>
-				<h3 class="font-bold text-gray-900 mb-2">Akademik & Hafalan</h3>
-				<p class="text-sm text-gray-500">Rekap penilaian, absensi murid, dan log catatan perkembangan santri.</p>
-			</div>
+            <div class="feature-card bg-white rounded-2xl p-6 border border-purple-100 shadow-sm relative overflow-hidden group">
+                <div class="w-12 h-12 bg-purple-50 text-brand-800 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-800 group-hover:text-gold-400 transition-colors">
+                    <i class="fa-solid fa-location-dot text-xl"></i>
+                </div>
+                <h3 class="font-bold text-brand-900 text-lg mb-2">Presensi GPS Guru</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">Absensi berbasis geofencing dengan validasi lokasi menggunakan Haversine Formula.</p>
+            </div>
 
-			<div class="feature-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-				<div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
-					<i class="fa-solid fa-people-arrows text-red-600 text-xl"></i>
-				</div>
-				<h3 class="font-bold text-gray-900 mb-2">Pipeline PPDB</h3>
-				<p class="text-sm text-gray-500">Lacak alur penerimaan dari Lead hingga menjadi murid aktif.</p>
-			</div>
+            <div class="feature-card bg-white rounded-2xl p-6 border border-purple-100 shadow-sm relative overflow-hidden group">
+                <div class="w-12 h-12 bg-amber-50 text-gold-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gold-500 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-money-bill-wave text-xl"></i>
+                </div>
+                <h3 class="font-bold text-brand-900 text-lg mb-2">Manajemen SPP</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">Tagihan, pembayaran, dan aging piutang terintegrasi dengan ERPNext.</p>
+            </div>
 
-			<div class="feature-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-				<div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
-					<i class="fa-solid fa-mobile-screen text-teal-600 text-xl"></i>
-				</div>
-				<h3 class="font-bold text-gray-900 mb-2">PWA Mobile-First</h3>
-				<p class="text-sm text-gray-500">Bisa di-install di HP, akses optimal dari mana saja tanpa perlu unduh app.</p>
-			</div>
+            <div class="feature-card bg-white rounded-2xl p-6 border border-purple-100 shadow-sm relative overflow-hidden group">
+                <div class="w-12 h-12 bg-purple-50 text-brand-800 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-800 group-hover:text-gold-400 transition-colors">
+                    <i class="fa-solid fa-book-quran text-xl"></i>
+                </div>
+                <h3 class="font-bold text-brand-900 text-lg mb-2">Akademik & Hafalan</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">Rekap penilaian, absensi murid, dan log catatan perkembangan santri.</p>
+            </div>
 
-		</div>
-	</section>
+            <div class="feature-card bg-white rounded-2xl p-6 border border-purple-100 shadow-sm relative overflow-hidden group">
+                <div class="w-12 h-12 bg-amber-50 text-gold-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gold-500 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-people-arrows text-xl"></i>
+                </div>
+                <h3 class="font-bold text-brand-900 text-lg mb-2">Pipeline PPDB</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">Lacak alur penerimaan dari Lead hingga menjadi murid aktif.</p>
+            </div>
 
-	<!-- Footer -->
-	<footer class="bg-white border-t border-gray-200 py-8 text-center text-sm text-gray-400">
-		<p>© {{ frappe.utils.now_datetime().year }} SmartApp — Dibangun di atas <a href="https://frappeframework.com" class="text-blue-500 hover:underline">Frappe Framework</a> &amp; ERPNext</p>
-	</footer>
+            <div class="feature-card bg-white rounded-2xl p-6 border border-purple-100 shadow-sm relative overflow-hidden group">
+                <div class="w-12 h-12 bg-purple-50 text-brand-800 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-800 group-hover:text-gold-400 transition-colors">
+                    <i class="fa-solid fa-mobile-screen text-xl"></i>
+                </div>
+                <h3 class="font-bold text-brand-900 text-lg mb-2">PWA Mobile-First</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">Bisa di-install di HP, akses optimal dari mana saja tanpa perlu unduh app.</p>
+            </div>
 
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-purple-100 py-8 text-center text-sm text-gray-500">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>© {{ frappe.utils.now_datetime().year }} SmartApp — Dibangun di atas <a href="https://frappeframework.com" class="text-brand-800 font-medium hover:text-gold-600 hover:underline transition-colors">Frappe Framework</a> &amp; ERPNext</p>
+        </div>
+    </footer>
+
+    <!-- jQuery Script Integration -->
+    <script>
+        $(document).ready(function () {
+            // Efek bayangan navbar saat di-scroll
+            $(window).on('scroll', function () {
+                if ($(this).scrollTop() > 10) {
+                    $('#mainNav').addClass('shadow-md border-transparent').removeClass('border-purple-100');
+                } else {
+                    $('#mainNav').removeClass('shadow-md border-transparent').addClass('border-purple-100');
+                }
+            });
+
+            // Efek interaksi hover tambahan pada feature-card
+            $('.feature-card').hover(
+                function() {
+                    $(this).find('i').addClass('scale-110 transition-transform');
+                },
+                function() {
+                    $(this).find('i').removeClass('scale-110');
+                }
+            );
+        });
+    </script>
 </body>
 </html>
