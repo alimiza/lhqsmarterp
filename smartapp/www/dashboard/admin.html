@@ -4,58 +4,97 @@
 {% block dashboard_badge %}Admin{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-	<h1 class="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
-	<p class="text-sm text-gray-500 mt-1">Ringkasan operasional harian lembaga</p>
+<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-5 bg-white p-6 rounded-2xl border border-purple-100 shadow-sm">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="inline-block w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse"></span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight">Dashboard Admin</h1>
+        </div>
+        <p class="text-sm text-purple-900/70 font-normal">Ringkasan operasional harian dan statistik pelayanan lembaga</p>
+    </div>
+
+    <div class="flex items-center gap-2 text-xs font-medium text-purple-800 bg-purple-50 px-3 py-2 rounded-xl border border-purple-100 self-start md:self-auto">
+        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
+        <span>Pembaruan Terakhir: Real-time</span>
+    </div>
 </div>
 
-<!-- KPI Cards -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-	<div class="dashboard-card bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-		<div class="flex items-center gap-3 mb-3">
-			<div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-				<i class="fa-solid fa-users text-blue-600"></i>
-			</div>
-			<span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Murid Aktif</span>
-		</div>
-		<div class="text-3xl font-bold text-gray-900" id="kpi-murid-aktif">—</div>
-	</div>
-
-	<div class="dashboard-card bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-		<div class="flex items-center gap-3 mb-3">
-			<div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-				<i class="fa-solid fa-user-plus text-purple-600"></i>
-			</div>
-			<span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Calon Murid</span>
-		</div>
-		<div class="text-3xl font-bold text-gray-900" id="kpi-calon-murid">—</div>
-	</div>
-
-	<div class="dashboard-card bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-		<div class="flex items-center gap-3 mb-3">
-			<div class="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
-				<i class="fa-solid fa-file-invoice-dollar text-yellow-600"></i>
-			</div>
-			<span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tagihan Jatuh Tempo</span>
-		</div>
-		<div class="text-3xl font-bold text-gray-900" id="kpi-tagihan">—</div>
-	</div>
-
-	<div class="dashboard-card bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-		<div class="flex items-center gap-3 mb-3">
-			<div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-				<i class="fa-solid fa-headset text-red-600"></i>
-			</div>
-			<span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiket CS Masuk</span>
-		</div>
-		<div class="text-3xl font-bold text-gray-900" id="kpi-tiket">—</div>
-	</div>
+<div class="mb-4 flex items-center justify-between">
+    <h2 class="text-xs font-bold text-purple-900/60 uppercase tracking-widest flex items-center gap-2">
+        <i class="fa-solid fa-chart-pie text-amber-500"></i>
+        <span>Ikhtisar Operasional</span>
+    </h2>
 </div>
 
-<!-- Placeholder section -->
-<div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400">
-	<i class="fa-solid fa-chart-gantt text-4xl mb-3"></i>
-	<p class="text-sm">Agenda harian & data detail akan ditampilkan di sini.</p>
-	<p class="text-xs mt-1">Fase 2 akan mengisi widget ini.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <!-- Murid Aktif Card -->
+    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Murid Aktif</span>
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-users text-lg"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-murid-aktif">—</div>
+    </div>
+
+    <!-- Calon Murid Card -->
+    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Calon Murid</span>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-user-plus text-lg"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-calon-murid">—</div>
+    </div>
+
+    <!-- Tagihan Jatuh Tempo Card -->
+    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Tagihan Jatuh Tempo</span>
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-file-invoice-dollar text-lg"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-tagihan">—</div>
+    </div>
+
+    <!-- Tiket CS Masuk Card -->
+    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Tiket CS Masuk</span>
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-headset text-lg"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-tiket">—</div>
+    </div>
 </div>
+
+<div class="bg-gradient-to-br from-purple-50/60 via-white to-amber-50/40 rounded-2xl border-2 border-dashed border-purple-200/80 p-10 text-center relative overflow-hidden group">
+    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-purple-100 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+        <i class="fa-solid fa-chart-gantt text-2xl text-purple-700"></i>
+    </div>
+    <h4 class="font-bold text-purple-950 text-base mb-1">Agenda & Aktivitas Operasional</h4>
+    <p class="text-sm text-purple-900/70 max-w-md mx-auto mb-1">
+        Jadwal harian, antrean persetujuan berkas, dan aktivitas terbaru akan ditampilkan di sini pada pembaruan Fase 2.
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function () {
+    // Efek hover interaktif jQuery pada KPI Cards
+    $('.dashboard-card').hover(
+        function() {
+            $(this).find('i').addClass('scale-110 transition-transform');
+        },
+        function() {
+            $(this).find('i').removeClass('scale-110');
+        }
+    );
+});
+</script>
 {% endblock %}
