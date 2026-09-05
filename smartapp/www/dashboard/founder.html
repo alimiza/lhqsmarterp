@@ -206,7 +206,7 @@
                             </span>
                         </div>
                         <p class="text-lg font-extrabold text-emerald-600 tracking-tight" id="kpi-surplus">Rp 0</p>
-                        <span class="mt-2 inline-block text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">Surplus +35.2%</span>
+                        <span class="mt-2 inline-block text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-md" id="kpi-surplus-badge">Surplus</span>
                     </div>
 
                     <!-- Card 5: Laba Operasional & Piutang SPP -->
@@ -567,18 +567,26 @@
 
     <script>
         /**
-         * DUMMY DATA JSON STRUCTURE FOR FOUNDER DASHBOARD
+         * Company and Initial SSR Data
+         */
+        const TARGET_COMPANY = "{{ target_company or "Little Hafidz Qur'an (Demo)" }}";
+        const initialFinancialKPI = {{ (initial_financial_kpi or {}) | tojson }};
+
+        const defaultFinancialKPI = {
+            "saldo_kas_bank": 0,
+            "pemasukan_bulan_ini": 0,
+            "pengeluaran_bulan_ini": 0,
+            "surplus_defisit": 0,
+            "total_piutang_spp": 0,
+            "laba_operasional": 0,
+            "unpaid_students_count": 0
+        };
+
+        /**
+         * FOUNDER DASHBOARD DATA STORE
          */
         const founderDashboardData = {
-            "financial_kpi": {
-                "saldo_kas_bank": 284500000,
-                "pemasukan_bulan_ini": 142800000,
-                "pengeluaran_bulan_ini": 89300000,
-                "surplus_defisit": 53500000,
-                "total_piutang_spp": 24500000,
-                "laba_operasional": 48200000,
-                "unpaid_students_count": 18
-            },
+            "financial_kpi": Object.assign({}, defaultFinancialKPI, initialFinancialKPI),
             "bank_accounts": [
                 { "name": "BSI Main Operational", "account_no": "7182-XXXX-01", "balance": 185000000, "type": "Bank Utama" },
                 { "name": "Bank Mandiri PPDB", "account_no": "1370-XXXX-89", "balance": 86200000, "type": "Bank Penerimaan" },
@@ -662,11 +670,77 @@
         }
 
         /**
+         * Helper Function: Read cookie by name (for CSRF Token)
+         */
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        /**
+         * Fetch financial KPI from Frappe REST API
+         * Endpoint: /api/method/smartapp.api.dashboard.get_founder_financial_kpi
+         */
+        function fetchFinancialKPI(company = TARGET_COMPANY) {
+            return $.ajax({
+                url: '/api/method/smartapp.api.dashboard.get_founder_financial_kpi',
+                type: 'GET',
+                data: { company: company },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || ''
+                }
+            });
+        }
+
+        /**
+         * Asynchronously load and update financial KPI from REST API
+         */
+        function loadFinancialKPI(company = TARGET_COMPANY, onComplete = null) {
+            fetchFinancialKPI(company)
+                .done(function (response) {
+                    if (response && response.message) {
+                        const data = response.message;
+                        founderDashboardData.financial_kpi = {
+                            saldo_kas_bank: data.saldo_kas_bank,
+                            pemasukan_bulan_ini: data.pemasukan_bulan_ini,
+                            pengeluaran_bulan_ini: data.pengeluaran_bulan_ini,
+                            surplus_defisit: data.surplus_defisit,
+                            total_piutang_spp: data.total_piutang_spp,
+                            laba_operasional: data.laba_operasional,
+                            unpaid_students_count: data.unpaid_students_count
+                        };
+                        renderKPIs();
+
+                        if (data.period && data.period.from_date) {
+                            const pDate = new Date(data.period.from_date);
+                            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                            $('#current-date-display').text(monthNames[pDate.getMonth()] + ' ' + pDate.getFullYear());
+                        }
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Financial KPI dari REST API:', error);
+                })
+                .always(function () {
+                    if (typeof onComplete === 'function') {
+                        onComplete();
+                    }
+                });
+        }
+
+        /**
          * Main Render Function
          */
         $(document).ready(function () {
-            // Render KPI Overview Metrics
+            // Render initial KPI Overview Metrics (from SSR context or defaults)
             renderKPIs();
+
+            // Fetch live Financial KPI from REST API
+            loadFinancialKPI();
             
             // Render Charts
             initCharts();
@@ -698,9 +772,25 @@
             $('#kpi-pemasukan').text(formatIDR(fin.pemasukan_bulan_ini));
             $('#kpi-pengeluaran').text(formatIDR(fin.pengeluaran_bulan_ini));
             $('#kpi-surplus').text(formatIDR(fin.surplus_defisit));
+            
+            // Dynamic badge for surplus / defisit
+            if (fin.surplus_defisit >= 0) {
+                $('#kpi-surplus').removeClass('text-rose-600').addClass('text-emerald-600');
+                $('#kpi-surplus-badge').attr('class', 'mt-2 inline-block text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-md').html('<i class="fa-solid fa-arrow-up mr-1"></i> Surplus');
+            } else {
+                $('#kpi-surplus').removeClass('text-emerald-600').addClass('text-rose-600');
+                $('#kpi-surplus-badge').attr('class', 'mt-2 inline-block text-[10px] bg-rose-100 text-rose-800 font-semibold px-2 py-0.5 rounded-md').html('<i class="fa-solid fa-arrow-down mr-1"></i> Defisit');
+            }
+
             $('#kpi-piutang-spp').text(formatIDR(fin.total_piutang_spp));
             $('#kpi-spp-unpaid-count').text(fin.unpaid_students_count);
+
             $('#kpi-laba-operasional').text(formatIDR(fin.laba_operasional));
+            if (fin.laba_operasional >= 0) {
+                $('#kpi-laba-operasional').removeClass('text-rose-600').addClass('text-emerald-600');
+            } else {
+                $('#kpi-laba-operasional').removeClass('text-emerald-600').addClass('text-rose-600');
+            }
 
             // Academic Cards
             $('#kpi-murid-aktif').text(aca.murid_aktif);
@@ -1001,15 +1091,14 @@
                 $('#' + targetTab).removeClass('hidden');
             });
 
-            // Refresh Button Simulation
+            // Refresh Button via REST API
             $('#btn-refresh').on('click', function () {
                 const btn = $(this);
                 btn.addClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-spinner fa-spin"></i> Loading...');
                 
-                setTimeout(() => {
+                loadFinancialKPI(TARGET_COMPANY, function () {
                     btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
-                    renderKPIs();
-                }, 600);
+                });
             });
 
             // Filter SPP Receivables Table

@@ -135,3 +135,111 @@ def _get_configured_dashboards(user_roles):
 					default_dashboard = default_dash_val
 
 	return allowed, default_dashboard
+
+
+@frappe.whitelist()
+def get_founder_financial_kpi(company=None, date=None):
+	"""Return financial KPI metrics for the Founder Dashboard.
+
+	Returns:
+		dict: {
+			company: str,
+			period: {from_date: str, to_date: str},
+			saldo_kas_bank: float,
+			pemasukan_bulan_ini: float,
+			pengeluaran_bulan_ini: float,
+			surplus_defisit: float,
+			laba_operasional: float,
+			total_piutang_spp: float,
+			unpaid_students_count: int,
+		}
+	"""
+	company = company or "Little Hafidz Qur'an (Demo)"
+	date = date or frappe.utils.today()
+
+	first_day = frappe.utils.get_first_day(date)
+	last_day = frappe.utils.get_last_day(date)
+
+	# 1. Saldo Kas & Bank (total balance of Bank & Cash accounts)
+	saldo_kas_bank = frappe.db.sql("""
+		SELECT COALESCE(SUM(gl.debit - gl.credit), 0)
+		FROM `tabGL Entry` gl
+		JOIN `tabAccount` a ON a.name = gl.account
+		WHERE gl.company = %s
+		  AND a.account_type IN ('Bank', 'Cash')
+		  AND gl.is_cancelled = 0
+	""", (company,))[0][0] or 0.0
+
+	# 2. Pemasukan Bulan Ini (Root Type: Income, normal balance: Credit)
+	pemasukan_bulan_ini = frappe.db.sql("""
+		SELECT COALESCE(SUM(gl.credit - gl.debit), 0)
+		FROM `tabGL Entry` gl
+		JOIN `tabAccount` a ON a.name = gl.account
+		WHERE gl.company = %s
+		  AND a.root_type = 'Income'
+		  AND gl.posting_date BETWEEN %s AND %s
+		  AND gl.is_cancelled = 0
+	""", (company, first_day, last_day))[0][0] or 0.0
+
+	# 3. Pengeluaran Bulan Ini (Root Type: Expense, normal balance: Debit)
+	pengeluaran_bulan_ini = frappe.db.sql("""
+		SELECT COALESCE(SUM(gl.debit - gl.credit), 0)
+		FROM `tabGL Entry` gl
+		JOIN `tabAccount` a ON a.name = gl.account
+		WHERE gl.company = %s
+		  AND a.root_type = 'Expense'
+		  AND gl.posting_date BETWEEN %s AND %s
+		  AND gl.is_cancelled = 0
+	""", (company, first_day, last_day))[0][0] or 0.0
+
+	# 4. Surplus / Defisit & Laba Operasional
+	surplus_defisit = pemasukan_bulan_ini - pengeluaran_bulan_ini
+	laba_operasional = surplus_defisit
+
+	# 5 & 6. Total Piutang SPP & Unpaid Students Count
+	total_piutang_spp = 0.0
+	unpaid_students_count = 0
+
+	has_fees = frappe.db.table_exists("Fees")
+	if has_fees:
+		fee_stats = frappe.db.sql("""
+			SELECT COALESCE(SUM(outstanding_amount), 0) as total_piutang,
+			       COUNT(DISTINCT student) as unpaid_count
+			FROM `tabFees`
+			WHERE company = %s
+			  AND docstatus = 1
+			  AND outstanding_amount > 0
+		""", (company,), as_dict=True)
+		if fee_stats and (fee_stats[0].total_piutang > 0 or fee_stats[0].unpaid_count > 0):
+			total_piutang_spp = float(fee_stats[0].total_piutang or 0.0)
+			unpaid_students_count = int(fee_stats[0].unpaid_count or 0)
+
+	# Fallback to Sales Invoice if no Fees records exist
+	if total_piutang_spp == 0.0 and unpaid_students_count == 0:
+		si_stats = frappe.db.sql("""
+			SELECT COALESCE(SUM(outstanding_amount), 0) as total_piutang,
+			       COUNT(DISTINCT customer) as unpaid_count
+			FROM `tabSales Invoice`
+			WHERE company = %s
+			  AND docstatus = 1
+			  AND outstanding_amount > 0
+		""", (company,), as_dict=True)
+		if si_stats:
+			total_piutang_spp = float(si_stats[0].total_piutang or 0.0)
+			unpaid_students_count = int(si_stats[0].unpaid_count or 0)
+
+	return {
+		"company": company,
+		"period": {
+			"from_date": str(first_day),
+			"to_date": str(last_day),
+		},
+		"saldo_kas_bank": float(saldo_kas_bank),
+		"pemasukan_bulan_ini": float(pemasukan_bulan_ini),
+		"pengeluaran_bulan_ini": float(pengeluaran_bulan_ini),
+		"surplus_defisit": float(surplus_defisit),
+		"laba_operasional": float(laba_operasional),
+		"total_piutang_spp": float(total_piutang_spp),
+		"unpaid_students_count": int(unpaid_students_count),
+	}
+
