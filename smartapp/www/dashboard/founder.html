@@ -1,209 +1,1052 @@
-{% extends "smartapp/templates/dashboard_layout.html" %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Founder - Smart ERP Little Haffidz Qur'an</title>
+    <meta name="description" content="Executive Founder Dashboard - Smart ERP Little Haffidz Qur'an" />
+    <meta name="theme-color" content="#3b0764" />
 
-{% block title %}Dashboard Founder — Smart ERP LHQ{% endblock %}
-{% block dashboard_badge %}Founder{% endblock %}
-
-{% block content %}
-<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-5 bg-white p-6 rounded-2xl border border-purple-100 shadow-sm">
-    <div>
-        <div class="flex items-center gap-2 mb-1">
-            <span class="inline-block w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse"></span>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight">Dashboard Founder</h1>
-        </div>
-        <p class="text-sm text-purple-900/70 font-normal">Gambaran menyeluruh keuangan, akademik, dan ikhtisar pertumbuhan lembaga</p>
-    </div>
-
-    <!-- Global Filter Bar -->
-    <div class="flex flex-wrap items-center gap-2.5" id="filter-bar">
-        <div class="relative">
-            <select id="filter-company" class="text-sm font-medium border border-purple-200 rounded-xl px-3.5 py-2.5 bg-purple-50/30 text-purple-900 focus:bg-white focus:ring-2 focus:ring-purple-600 focus:border-purple-600 focus:outline-none transition-all cursor-pointer shadow-xs">
-                <option value="">Semua Lembaga</option>
-            </select>
-        </div>
-        <div class="relative">
-            <select id="filter-academic-year" class="text-sm font-medium border border-purple-200 rounded-xl px-3.5 py-2.5 bg-purple-50/30 text-purple-900 focus:bg-white focus:ring-2 focus:ring-purple-600 focus:border-purple-600 focus:outline-none transition-all cursor-pointer shadow-xs">
-                <option value="">Semua Tahun Ajaran</option>
-            </select>
-        </div>
-        <div class="relative">
-            <input type="month" id="filter-period"
-                class="text-sm font-medium border border-purple-200 rounded-xl px-3.5 py-2.5 bg-purple-50/30 text-purple-900 focus:bg-white focus:ring-2 focus:ring-purple-600 focus:border-purple-600 focus:outline-none transition-all cursor-pointer shadow-xs"
-            />
-        </div>
-    </div>
-</div>
-
-<!-- KPI Keuangan Section Header -->
-<div class="mb-4 flex items-center justify-between">
-    <h2 class="text-xs font-bold text-purple-900/60 uppercase tracking-widest flex items-center gap-2">
-        <i class="fa-solid fa-coins text-amber-500"></i>
-        <span>Ikhtisar Keuangan</span>
-    </h2>
-    <span class="text-xs font-medium text-purple-800 bg-purple-100/70 px-2.5 py-1 rounded-full">Real-time Data</span>
-</div>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Saldo Kas & Bank</span>
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-landmark text-lg"></i>
-            </div>
-        </div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-saldo">—</div>
-    </div>
-
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Pemasukan Bulan Ini</span>
-            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-arrow-trend-up text-lg"></i>
-            </div>
-        </div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-pemasukan">—</div>
-    </div>
-
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Pengeluaran Bulan Ini</span>
-            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-arrow-trend-down text-lg"></i>
-            </div>
-        </div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-pengeluaran">—</div>
-    </div>
-
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Surplus / Defisit</span>
-            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 border border-purple-200 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-scale-balanced text-lg"></i>
-            </div>
-        </div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-surplus">—</div>
-    </div>
-
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Total Piutang SPP</span>
-            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-clock text-lg"></i>
-            </div>
-        </div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-piutang">—</div>
-    </div>
-
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300 group">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-purple-900/60 uppercase tracking-wider">Laba Operasional</span>
-            <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-chart-line text-lg"></i>
-            </div>
-        </div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 tracking-tight" id="kpi-laba">—</div>
-    </div>
-</div>
-
-<!-- KPI Akademik Section Header -->
-<div class="mb-4 flex items-center justify-between">
-    <h2 class="text-xs font-bold text-purple-900/60 uppercase tracking-widest flex items-center gap-2">
-        <i class="fa-solid fa-graduation-cap text-purple-700"></i>
-        <span>Statistik Akademik</span>
-    </h2>
-</div>
-
-<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300">
-        <div class="text-xs font-bold text-purple-900/50 uppercase tracking-wider mb-2">Murid Aktif</div>
-        <div class="text-3xl font-black text-purple-950" id="kpi-murid-aktif">—</div>
-    </div>
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300">
-        <div class="text-xs font-bold text-purple-900/50 uppercase tracking-wider mb-2">Murid Baru</div>
-        <div class="text-3xl font-black text-emerald-600" id="kpi-murid-baru">—</div>
-    </div>
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300">
-        <div class="text-xs font-bold text-purple-900/50 uppercase tracking-wider mb-2">Murid Keluar</div>
-        <div class="text-3xl font-black text-rose-500" id="kpi-murid-keluar">—</div>
-    </div>
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300">
-        <div class="text-xs font-bold text-purple-900/50 uppercase tracking-wider mb-2">Total Guru</div>
-        <div class="text-3xl font-black text-purple-950" id="kpi-total-guru">—</div>
-    </div>
-    <div class="dashboard-card bg-white rounded-2xl p-5 border border-purple-100 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-300">
-        <div class="text-xs font-bold text-purple-900/50 uppercase tracking-wider mb-2">Kelas Aktif</div>
-        <div class="text-3xl font-black text-amber-600" id="kpi-kelas-aktif">—</div>
-    </div>
-</div>
-
-<!-- Charts Row -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-2xl p-6 border border-purple-100 shadow-xs hover:shadow-sm transition-shadow">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-purple-50">
-            <h3 class="text-sm font-bold text-purple-950 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-purple-600"></span>
-                <span>Tren Pertumbuhan Murid (12 Bulan)</span>
-            </h3>
-            <span class="text-xs font-medium text-purple-800/70 bg-purple-50 px-2.5 py-1 rounded-lg">Grafik Murid</span>
-        </div>
-        <canvas id="chart-student-trend" class="w-full" height="200"></canvas>
-    </div>
-
-    <div class="bg-white rounded-2xl p-6 border border-purple-100 shadow-xs hover:shadow-sm transition-shadow">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-purple-50">
-            <h3 class="text-sm font-bold text-purple-950 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                <span>Tren Arus Kas / Cashflow (12 Bulan)</span>
-            </h3>
-            <span class="text-xs font-medium text-amber-800/80 bg-amber-50 px-2.5 py-1 rounded-lg">Grafik Keuangan</span>
-        </div>
-        <canvas id="chart-cashflow" class="w-full" height="200"></canvas>
-    </div>
-</div>
-
-<!-- Placeholder Widget -->
-<div class="bg-gradient-to-br from-purple-50/60 via-white to-amber-50/40 rounded-2xl border-2 border-dashed border-purple-200/80 p-10 text-center relative overflow-hidden group">
-    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-purple-100 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-        <i class="fa-solid fa-table-list text-2xl text-purple-700"></i>
-    </div>
-    <h4 class="font-bold text-purple-950 text-base mb-1">Modul Analitik Lanjutan</h4>
-    <p class="text-sm text-purple-900/70 max-w-md mx-auto">
-        Laporan Aging Piutang, Analisis Top Pengeluaran, dan visualisasi prediktif akan tersedia pada pembaruan Fase 2.
-    </p>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="/assets/smartapp/js/chart-helpers.js"></script>
-<script>
-$(document).ready(function () {
-    // Inisialisasi default filter bulan saat ini
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    $('#filter-period').val(`${now.getFullYear()}-${month}`);
-
-    // Handler event saat filter mengalami perubahan
-    $('#filter-company, #filter-academic-year, #filter-period').on('change', function () {
-        const filterName = $(this).attr('id');
-        const filterVal = $(this).val();
-
-        // Indikator visual singkat bahwa data diperbarui
-        $(this).addClass('ring-2 ring-purple-400');
-        setTimeout(() => {
-            $(this).removeClass('ring-2 ring-purple-400');
-        }, 500);
-
-        console.log(`Filter [${filterName}] diubah ke: ${filterVal} — Data refresh siap diintegrasikan.`);
-    });
-
-    // Efek hover interaktif jQuery pada KPI Cards
-    $('.dashboard-card').hover(
-        function() {
-            $(this).find('i').addClass('scale-110 transition-transform');
-        },
-        function() {
-            $(this).find('i').removeClass('scale-110');
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            600: '#9333ea',
+                            700: '#7e22ce',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                            dark: '#3b0764',
+                        },
+                        gold: {
+                            100: '#fef9c3',
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#d97706',
+                            700: '#b45309',
+                        }
+                    }
+                }
+            }
         }
-    );
-});
-</script>
-{% endblock %}
+    </script>
+
+    <!-- Font Awesome Icons & Chart.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .hero-purple { 
+            background: linear-gradient(135deg, #3b0764 0%, #581c87 50%, #7e22ce 100%); 
+        }
+        .islamic-pattern {
+            background-color: #3b0764;
+            background-image: radial-gradient(rgba(250, 204, 21, 0.12) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+        .kpi-card {
+            transition: all 0.25s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(88, 28, 135, 0.12);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-gray-800 antialiased bg-slate-50 flex flex-col">
+
+    <!-- Top Executive Header -->
+    <header class="hero-purple islamic-pattern text-white sticky top-0 z-50 border-b border-purple-900/50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gold-400 text-brand-dark flex items-center justify-center font-bold text-xl shadow-lg shadow-gold-500/20">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg font-bold tracking-tight text-white">Dashboard Founder</h1>
+                        <span class="bg-gold-400/20 border border-gold-400/40 text-gold-300 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">Executive</span>
+                    </div>
+                    <p class="text-xs text-purple-200">Little Haffidz Qur'an Smart ERP</p>
+                </div>
+            </div>
+
+            <!-- Quick Controls & Profile -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center bg-purple-950/60 border border-purple-700/50 rounded-xl px-3 py-1.5 text-xs text-purple-200 gap-2">
+                    <i class="fa-regular fa-calendar-check text-gold-400"></i>
+                    <span id="current-date-display">Maret 2026</span>
+                </div>
+                <button id="btn-refresh" class="bg-purple-800/60 hover:bg-purple-700 text-gold-300 border border-purple-600/50 px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span class="hidden md:inline">Refresh Data</span>
+                </button>
+                <div class="h-6 w-px bg-purple-700/50 hidden sm:block"></div>
+                <div class="flex items-center gap-2.5 pl-1">
+                    <div class="w-8 h-8 rounded-full bg-gold-400 text-brand-dark font-bold flex items-center justify-center text-xs ring-2 ring-gold-400/50">
+                        KH
+                    </div>
+                    <div class="hidden lg:block text-left">
+                        <p class="text-xs font-bold leading-none text-white">Ustadz H. Ahmad, M.Pd</p>
+                        <p class="text-[10px] text-purple-300 leading-tight">Founder & Pembina</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center justify-between border-b border-gray-200 bg-white p-1.5 rounded-2xl shadow-sm overflow-x-auto custom-scrollbar">
+            <div class="flex items-center gap-1 min-w-max">
+                <button class="tab-btn active px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-brand-900 text-white shadow-sm" data-tab="tab-overview">
+                    <i class="fa-solid fa-chart-pie"></i> Ikhtisar Utama
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-gray-600 hover:bg-purple-50 hover:text-brand-900" data-tab="tab-finance">
+                    <i class="fa-solid fa-wallet"></i> Keuangan & Kas
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-gray-600 hover:bg-purple-50 hover:text-brand-900" data-tab="tab-academic">
+                    <i class="fa-solid fa-graduation-cap"></i> Akademik & Santri
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-gray-600 hover:bg-purple-50 hover:text-brand-900" data-tab="tab-marketing">
+                    <i class="fa-solid fa-bullhorn"></i> Marketing & PPDB
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-gray-600 hover:bg-purple-50 hover:text-brand-900" data-tab="tab-receivables">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Laporan Piutang SPP
+                </button>
+            </div>
+            <div class="hidden xl:flex items-center gap-2 pr-2 text-xs text-gray-500">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>System Sync: <strong class="text-gray-700">Live</strong></span>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT 1: OVERVIEW -->
+        <div id="tab-overview" class="tab-content space-y-6">
+
+            <!-- 1. KPI KEUANGAN (5 Cards) -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-bold text-brand-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-sack-dollar text-gold-600"></i> KPI Keuangan Utama
+                    </h2>
+                    <span class="text-xs text-gray-500">Per Hari Ini (Real-Time)</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Card 1: Saldo Kas & Bank -->
+                    <div class="kpi-card bg-white rounded-2xl p-4 border border-purple-100 shadow-sm relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-500">Saldo Kas & Bank</span>
+                            <span class="w-8 h-8 rounded-lg bg-purple-50 text-brand-800 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </span>
+                        </div>
+                        <p class="text-lg font-extrabold text-brand-dark tracking-tight" id="kpi-saldo-kas">Rp 0</p>
+                        <div class="mt-2 flex items-center text-[11px] text-emerald-600 gap-1 font-medium">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
+                            <span>+4.2% dari bulan lalu</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Pemasukan Bulan Ini -->
+                    <div class="kpi-card bg-white rounded-2xl p-4 border border-purple-100 shadow-sm relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-500">Pemasukan Bulan Ini</span>
+                            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-arrow-down-left"></i>
+                            </span>
+                        </div>
+                        <p class="text-lg font-extrabold text-gray-900 tracking-tight" id="kpi-pemasukan">Rp 0</p>
+                        <p class="mt-2 text-[11px] text-gray-500">Target: <span class="font-semibold text-gray-700">Rp 160.000.000</span></p>
+                    </div>
+
+                    <!-- Card 3: Pengeluaran Bulan Ini -->
+                    <div class="kpi-card bg-white rounded-2xl p-4 border border-purple-100 shadow-sm relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-500">Pengeluaran Bulan Ini</span>
+                            <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-arrow-up-right"></i>
+                            </span>
+                        </div>
+                        <p class="text-lg font-extrabold text-gray-900 tracking-tight" id="kpi-pengeluaran">Rp 0</p>
+                        <p class="mt-2 text-[11px] text-gray-500">Anggaran Operasional Aman</p>
+                    </div>
+
+                    <!-- Card 4: Surplus / Defisit -->
+                    <div class="kpi-card bg-white rounded-2xl p-4 border border-purple-100 shadow-sm relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-500">Surplus / Defisit</span>
+                            <span class="w-8 h-8 rounded-lg bg-gold-100 text-gold-700 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </span>
+                        </div>
+                        <p class="text-lg font-extrabold text-emerald-600 tracking-tight" id="kpi-surplus">Rp 0</p>
+                        <span class="mt-2 inline-block text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">Surplus +35.2%</span>
+                    </div>
+
+                    <!-- Card 5: Laba Operasional & Piutang SPP -->
+                    <div class="kpi-card bg-white rounded-2xl p-4 border border-purple-100 shadow-sm relative overflow-hidden bg-gradient-to-br from-white to-purple-50/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-500">Piutang SPP Tertunggak</span>
+                            <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+                            </span>
+                        </div>
+                        <p class="text-lg font-extrabold text-amber-600 tracking-tight" id="kpi-piutang-spp">Rp 0</p>
+                        <p class="mt-2 text-[11px] text-gray-500"><span id="kpi-spp-unpaid-count">0</span> Santri Belum Lunas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. KPI AKADEMIK & MARKETING (Grid Combine) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- KPI AKADEMIK -->
+                <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="font-bold text-brand-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-gold-600"></i> KPI Akademik & SDM
+                        </h3>
+                        <span class="text-[11px] text-purple-700 font-medium bg-purple-50 px-2.5 py-1 rounded-lg">TA 2025/2026</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="p-3 rounded-xl bg-purple-50/50 border border-purple-100/80">
+                            <p class="text-[11px] text-gray-500 mb-1">Murid Aktif</p>
+                            <p class="text-xl font-bold text-brand-900" id="kpi-murid-aktif">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1">Kapasitas: 300 Santri</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-purple-50/50 border border-purple-100/80">
+                            <p class="text-[11px] text-gray-500 mb-1">Masuk vs Keluar</p>
+                            <p class="text-sm font-bold text-gray-800"><span class="text-emerald-600" id="kpi-murid-baru">+0</span> / <span class="text-rose-600" id="kpi-murid-keluar">-0</span></p>
+                            <p class="text-[10px] text-gray-500 mt-1">Bulan Maret</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-purple-50/50 border border-purple-100/80">
+                            <p class="text-[11px] text-gray-500 mb-1">Guru & Staff</p>
+                            <p class="text-xl font-bold text-brand-900" id="kpi-total-guru">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1"><span id="kpi-kelas-aktif">0</span> Kelas Aktif</p>
+                        </div>
+                    </div>
+
+                    <!-- Target Murid Tahunan Progress Bar -->
+                    <div class="mt-4 pt-3 border-t border-gray-100">
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-medium text-gray-700">Target Murid Tahunan</span>
+                            <span class="font-bold text-brand-900" id="kpi-target-progress-text">80% (240 / 300)</span>
+                        </div>
+                        <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden p-0.5 border border-gray-200/50">
+                            <div id="kpi-target-progress-bar" class="hero-purple h-full rounded-full transition-all duration-700" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI MARKETING & PPDB -->
+                <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="font-bold text-brand-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-bullhorn text-gold-600"></i> KPI Marketing & PPDB
+                        </h3>
+                        <span class="text-[11px] text-gold-700 font-medium bg-gold-100/60 px-2.5 py-1 rounded-lg">Gelombang 2</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="p-3 rounded-xl bg-amber-50/40 border border-amber-100">
+                            <p class="text-[11px] text-gray-500 mb-1">Total Lead CRM</p>
+                            <p class="text-lg font-bold text-gray-900" id="kpi-lead-crm">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1">Calon Wali Santri</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-amber-50/40 border border-amber-100">
+                            <p class="text-[11px] text-gray-500 mb-1">Pendaftar PPDB</p>
+                            <p class="text-lg font-bold text-gray-900" id="kpi-pendaftar-ppdb">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1">Beli Formulir</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-amber-50/40 border border-amber-100">
+                            <p class="text-[11px] text-gray-500 mb-1">Conversion Rate</p>
+                            <p class="text-lg font-bold text-emerald-600" id="kpi-conversion-rate">0%</p>
+                            <p class="text-[10px] text-gray-500 mt-1">Lead → Murid</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-amber-50/40 border border-amber-100">
+                            <p class="text-[11px] text-gray-500 mb-1">Retention Rate</p>
+                            <p class="text-lg font-bold text-brand-900" id="kpi-retention-rate">0%</p>
+                            <p class="text-[10px] text-gray-500 mt-1">Santri Bertahan</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600">
+                        <span>Laba Operasional Bersih Bulan Ini:</span>
+                        <span class="font-extrabold text-emerald-600 text-sm" id="kpi-laba-operasional">Rp 0</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 3. GRAFIK INTERAKTIF SECTION -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Cashflow 12 Bulan (Span 2) -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-brand-900 text-sm">Tren Cashflow 12 Bulan</h3>
+                            <p class="text-xs text-gray-500">Perbandingan Pemasukan vs Pengeluaran Lembaga</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-brand-800"></span> Pemasukan</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-gold-400"></span> Pengeluaran</span>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="chartCashflow"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top 5 Pengeluaran (Span 1) -->
+                <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-brand-900 text-sm mb-1">Top 5 Pengeluaran</h3>
+                        <p class="text-xs text-gray-500 mb-4">Alokasi Anggaran Operasional Bulan Ini</p>
+                        <div class="h-52 relative">
+                            <canvas id="chartPengeluaran"></canvas>
+                        </div>
+                    </div>
+                    <div id="top-expense-list" class="mt-3 text-xs space-y-1.5 border-t border-gray-100 pt-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Pertumbuhan Murid -->
+                <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-brand-900 text-sm">Pertumbuhan Santri</h3>
+                            <p class="text-xs text-gray-500">Tren Total Santri Aktif 6 Bulan</p>
+                        </div>
+                    </div>
+                    <div class="h-52">
+                        <canvas id="chartMurid"></canvas>
+                    </div>
+                </div>
+
+                <!-- Marketing Funnel Conversion -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-brand-900 text-sm">Pipeline Conversion Marketing & PPDB</h3>
+                            <p class="text-xs text-gray-500">Alur Konversi dari Lead hingga Santri Resmi Registered</p>
+                        </div>
+                        <span class="text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg font-medium">Conversion: 28.5%</span>
+                    </div>
+                    <div class="h-52">
+                        <canvas id="chartMarketing"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB CONTENT 2: KEUANGAN & KAS -->
+        <div id="tab-finance" class="tab-content hidden space-y-6">
+
+            <!-- Saldo Akun Rekening -->
+            <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                <h3 class="font-bold text-brand-900 text-sm mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-vault text-gold-600"></i> Monitoring Rekening & Kas Lembaga
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="bank-accounts-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Transaksi Real-Time Feed -->
+            <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="font-bold text-brand-900 text-sm">Mutasi Kas & Transaksi Terbaru</h3>
+                        <p class="text-xs text-gray-500">Terintegrasi otomatis dengan ERPNext Accounting</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="search-tx" placeholder="Cari transaksi..." class="text-xs border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-700 w-48" />
+                        <button class="bg-purple-50 text-brand-900 hover:bg-purple-100 text-xs px-3 py-1.5 rounded-xl font-medium transition-colors">
+                            <i class="fa-solid fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-purple-50/60 text-brand-900 font-semibold border-b border-purple-100">
+                                <th class="py-3 px-4 rounded-l-xl">Tanggal & Waktu</th>
+                                <th class="py-3 px-4">Kode Transaksi</th>
+                                <th class="py-3 px-4">Keterangan / Deskripsi</th>
+                                <th class="py-3 px-4">Kategori</th>
+                                <th class="py-3 px-4">Akun Rekening</th>
+                                <th class="py-3 px-4 text-right rounded-r-xl">Nominal (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-table-body" class="divide-y divide-gray-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB CONTENT 3: AKADEMIK & SANTRI -->
+        <div id="tab-academic" class="tab-content hidden space-y-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm md:col-span-2">
+                    <h3 class="font-bold text-brand-900 text-sm mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-door-open text-gold-600"></i> Distribusi Kelas & Program Tahfidz
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="class-distribution-container">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                    <h3 class="font-bold text-brand-900 text-sm mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-award text-gold-600"></i> Demografi & Performance
+                    </h3>
+                    <div class="space-y-4 text-xs">
+                        <div class="p-3 bg-purple-50/50 rounded-xl border border-purple-100">
+                            <p class="font-semibold text-brand-900 mb-1">Rasio Guru vs Santri</p>
+                            <p class="text-base font-bold text-gray-800">1 : 13 Santri</p>
+                            <p class="text-[10px] text-emerald-600">Ideal (Standar Diknas Max 1:20)</p>
+                        </div>
+                        <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                            <p class="font-semibold text-gold-700 mb-1">Pencapaian Target Hafalan</p>
+                            <p class="text-base font-bold text-gray-800">88.4% Santri Tuntas</p>
+                            <p class="text-[10px] text-gray-500">Rata-rata 2.4 Juz / Tahun</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                            <p class="font-semibold text-emerald-800 mb-1">Kehadiran Guru Bulan Ini</p>
+                            <p class="text-base font-bold text-emerald-700">97.8% (GPS Validated)</p>
+                            <p class="text-[10px] text-emerald-600">Haversine Geofencing Active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB CONTENT 4: MARKETING & PPDB -->
+        <div id="tab-marketing" class="tab-content hidden space-y-6">
+
+            <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-brand-900 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-rectangle-ad text-gold-600"></i> Performa Kampanye Marketing & Ads
+                    </h3>
+                    <button class="bg-brand-900 text-white text-xs px-3 py-1.5 rounded-xl font-medium hover:bg-brand-800 transition-colors">
+                        + Kampanye Baru
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="campaigns-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB CONTENT 5: LAPORAN PIUTANG SPP -->
+        <div id="tab-receivables" class="tab-content hidden space-y-6">
+
+            <!-- Summary Receivables Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+                    <p class="text-xs text-gray-500 mb-1">Total Tunggakan SPP</p>
+                    <p class="text-xl font-extrabold text-rose-600" id="summary-total-piutang">Rp 0</p>
+                    <p class="text-[10px] text-gray-500 mt-1" id="summary-total-count">0 Santri</p>
+                </div>
+                <div class="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+                    <p class="text-xs text-gray-500 mb-1">Umur 0 - 30 Hari</p>
+                    <p class="text-lg font-bold text-amber-600" id="summary-aging-30">Rp 0</p>
+                    <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-medium">Lancar / Mild</span>
+                </div>
+                <div class="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+                    <p class="text-xs text-gray-500 mb-1">Umur 31 - 60 Hari</p>
+                    <p class="text-lg font-bold text-orange-600" id="summary-aging-60">Rp 0</p>
+                    <span class="text-[10px] bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md font-medium">Perlu Warning</span>
+                </div>
+                <div class="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+                    <p class="text-xs text-gray-500 mb-1">Umur > 60 Hari</p>
+                    <p class="text-lg font-bold text-rose-700" id="summary-aging-90">Rp 0</p>
+                    <span class="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-medium">Critical Follow-up</span>
+                </div>
+            </div>
+
+            <!-- Detailed Student Receivables Table -->
+            <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="font-bold text-brand-900 text-sm">Daftar Status Pembayaran & Piutang SPP Santri</h3>
+                        <p class="text-xs text-gray-500">Filter berdasarkan status kelunasan dan umur piutang</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="filter-spp-status" class="text-xs border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-700 bg-white">
+                            <option value="ALL">Semua Status</option>
+                            <option value="MENUNGGAK">Menunggak</option>
+                            <option value="LUNAS">Lunas</option>
+                        </select>
+                        <select id="filter-spp-aging" class="text-xs border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-700 bg-white">
+                            <option value="ALL">Semua Umur Piutang</option>
+                            <option value="0-30">0 - 30 Hari</option>
+                            <option value="31-60">31 - 60 Hari</option>
+                            <option value=">60">&gt; 60 Hari</option>
+                        </select>
+                        <input type="text" id="search-spp-student" placeholder="Cari Nama Santri / NIS..." class="text-xs border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-700 w-48" />
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-purple-50/60 text-brand-900 font-semibold border-b border-purple-100">
+                                <th class="py-3 px-4 rounded-l-xl">NIS</th>
+                                <th class="py-3 px-4">Nama Santri</th>
+                                <th class="py-3 px-4">Kelas</th>
+                                <th class="py-3 px-4">Wali Santri</th>
+                                <th class="py-3 px-4">Status SPP</th>
+                                <th class="py-3 px-4 text-right">Nominal Tunggakan</th>
+                                <th class="py-3 px-4 text-center">Umur Piutang</th>
+                                <th class="py-3 px-4 text-center rounded-r-xl">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="spp-table-body" class="divide-y divide-gray-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-purple-100 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-2">
+            <p>© 2026 <strong>Little Haffidz Qur'an</strong> — Smart ERP Executive Dashboard</p>
+            <p class="flex items-center gap-1">
+                <span>Powered by</span>
+                <span class="text-brand-900 font-semibold">Frappe Framework & ERPNext</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * DUMMY DATA JSON STRUCTURE FOR FOUNDER DASHBOARD
+         */
+        const founderDashboardData = {
+            "financial_kpi": {
+                "saldo_kas_bank": 284500000,
+                "pemasukan_bulan_ini": 142800000,
+                "pengeluaran_bulan_ini": 89300000,
+                "surplus_defisit": 53500000,
+                "total_piutang_spp": 24500000,
+                "laba_operasional": 48200000,
+                "unpaid_students_count": 18
+            },
+            "bank_accounts": [
+                { "name": "BSI Main Operational", "account_no": "7182-XXXX-01", "balance": 185000000, "type": "Bank Utama" },
+                { "name": "Bank Mandiri PPDB", "account_no": "1370-XXXX-89", "balance": 86200000, "type": "Bank Penerimaan" },
+                { "name": "Kas Kecil (Petty Cash)", "account_no": "KAS-UTAMA-01", "balance": 13300000, "type": "Kas Tunai" }
+            ],
+            "academic_kpi": {
+                "murid_aktif": 240,
+                "target_murid_tahunan": 300,
+                "murid_baru_bulan_ini": 14,
+                "murid_keluar_bulan_ini": 2,
+                "total_guru": 18,
+                "kelas_aktif": 12,
+                "progress_target_percent": 80.0
+            },
+            "marketing_kpi": {
+                "total_lead_crm": 210,
+                "pendaftar_ppdb": 85,
+                "conversion_rate_percent": 28.5,
+                "retention_rate_percent": 96.2
+            },
+            "cashflow_12_months": {
+                "labels": ["Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des", "Jan", "Feb", "Mar"],
+                "pemasukan": [110, 115, 150, 180, 130, 135, 125, 140, 145, 160, 138, 142.8],
+                "pengeluaran": [80, 82, 95, 110, 85, 88, 84, 87, 90, 92, 86, 89.3]
+            },
+            "student_growth_6_months": {
+                "labels": ["Okt 25", "Nov 25", "Des 25", "Jan 26", "Feb 26", "Mar 26"],
+                "total_students": [212, 218, 222, 230, 235, 240]
+            },
+            "top_5_pengeluaran": [
+                { "kategori": "Gaji Guru & SDM", "nominal": 48500000, "percent": 54.3 },
+                { "kategori": "Sewa & Operasional Gedung", "nominal": 15000000, "percent": 16.8 },
+                { "kategori": "Kegiatan & Modul Santri", "nominal": 12300000, "percent": 13.8 },
+                { "kategori": "Marketing & Iklan Meta", "nominal": 8500000, "percent": 9.5 },
+                { "kategori": "Utilities & Internet", "nominal": 5000000, "percent": 5.6 }
+            ],
+            "marketing_funnel": {
+                "labels": ["Lead Inquiries", "Visit / Open House", "Beli Formulir", "Lulus Tes", "Registered Santri"],
+                "data": [210, 135, 85, 68, 60]
+            },
+            "campaigns": [
+                { "title": "Meta Ads PPDB Gel 2", "channel": "Instagram / FB", "budget": "Rp 5.000.000", "leads": 120, "cost_per_lead": "Rp 41.600", "status": "Aktif" },
+                { "title": "Brosur & Spanduk Masjid", "channel": "Offline Direct", "budget": "Rp 2.000.000", "leads": 45, "cost_per_lead": "Rp 44.400", "status": "Selesai" },
+                { "title": "Open House & Trial Class", "channel": "Event", "budget": "Rp 3.500.000", "leads": 32, "cost_per_lead": "Rp 109.300", "status": "Aktif" },
+                { "title": "Program Referral Wali Santri", "channel": "Word of Mouth", "budget": "Rp 1.500.000", "leads": 13, "cost_per_lead": "Rp 115.300", "status": "Aktif" }
+            ],
+            "recent_transactions": [
+                { "time": "Hari ini, 11:20", "code": "TRX-202603-089", "desc": "Pembayaran SPP Maret - Muhammad Al-Fatih", "category": "Pemasukan SPP", "account": "BSI Main", "amount": 750000, "type": "IN" },
+                { "time": "Hari ini, 09:45", "code": "TRX-202603-088", "desc": "Pembelian Modul Iqra & Tahfidz Level 1", "category": "Perlengkapan", "account": "Kas Kecil", "amount": 1250000, "type": "OUT" },
+                { "time": "Kemarin, 16:10", "code": "TRX-202603-087", "desc": "Pendaftaran PPDB Gel 2 - Aisyah Humaira", "category": "PPDB Fee", "account": "Mandiri PPDB", "amount": 350000, "type": "IN" },
+                { "time": "Kemarin, 14:00", "code": "TRX-202603-086", "desc": "Tagihan Listrik & WiFi Gedung A", "category": "Utilities", "account": "BSI Main", "amount": 2100000, "type": "OUT" },
+                { "time": "03 Mar 2026", "code": "TRX-202603-085", "desc": "Honor Musyrif & Guru Tahfidz Maret", "category": "Gaji SDM", "account": "BSI Main", "amount": 48500000, "type": "OUT" }
+            ],
+            "piutang_spp_list": [
+                { "nis": "LH-2024-012", "student": "Ahmad Rayyan", "class": "Tahfidz A1", "parent": "Bpk. Hendra", "status": "MENUNGGAK", "nominal": 1500000, "aging_days": 45, "aging_cat": "31-60" },
+                { "nis": "LH-2024-045", "student": "Bilal Ramadhan", "class": "Tahfidz A2", "parent": "Bpk. Farhan", "status": "MENUNGGAK", "nominal": 2250000, "aging_days": 75, "aging_cat": ">60" },
+                { "nis": "LH-2024-088", "student": "Zahra Syafira", "class": "Tajwid B1", "parent": "Ibu Maryam", "status": "MENUNGGAK", "nominal": 750000, "aging_days": 15, "aging_cat": "0-30" },
+                { "nis": "LH-2025-019", "student": "Fatimah Az-Zahra", "class": "Tahfidz A1", "parent": "Bpk. Usman", "status": "LUNAS", "nominal": 0, "aging_days": 0, "aging_cat": "-" },
+                { "nis": "LH-2024-102", "student": "Kenzo Al-Ghifari", "class": "Tajwid B2", "parent": "Ibu Dina", "status": "MENUNGGAK", "nominal": 3000000, "aging_days": 90, "aging_cat": ">60" },
+                { "nis": "LH-2025-054", "student": "Naufal Zaki", "class": "Tahfidz A3", "parent": "Bpk. Rahmat", "status": "MENUNGGAK", "nominal": 750000, "aging_days": 20, "aging_cat": "0-30" },
+                { "nis": "LH-2025-061", "student": "Aisyah Nuha", "class": "Tajwid B1", "parent": "Bpk. Lukman", "status": "LUNAS", "nominal": 0, "aging_days": 0, "aging_cat": "-" },
+                { "nis": "LH-2024-077", "student": "Yusuf Habibie", "class": "Tahfidz A2", "parent": "Ibu Siska", "status": "MENUNGGAK", "nominal": 1500000, "aging_days": 50, "aging_cat": "31-60" }
+            ],
+            "class_distribution": [
+                { "class_name": "Kelas Tahfidz A1", "teacher": "Ustadz Ridwan", "students": 22, "target": "Juz 30 & 29" },
+                { "class_name": "Kelas Tahfidz A2", "teacher": "Ustadzah Hasanah", "students": 20, "target": "Juz 30 & 29" },
+                { "class_name": "Kelas Tajwid B1", "teacher": "Ustadz Abdullah", "students": 24, "target": "Matan Jazariyah" },
+                { "class_name": "Kelas Pra-Tahfidz C", "teacher": "Ustadzah Nurul", "students": 18, "target": "Iqra 4-6 & Makhraj" }
+            ]
+        };
+
+        /**
+         * Helper Function: Format Currency to IDR (Rupiah)
+         */
+        function formatIDR(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        /**
+         * Main Render Function
+         */
+        $(document).ready(function () {
+            // Render KPI Overview Metrics
+            renderKPIs();
+            
+            // Render Charts
+            initCharts();
+
+            // Render Finance & Bank Accounts
+            renderBankAccounts();
+            renderTransactions(founderDashboardData.recent_transactions);
+
+            // Render Academic Classes
+            renderAcademicClasses();
+
+            // Render Marketing Campaigns
+            renderCampaigns();
+
+            // Render SPP Receivables Table
+            renderSPPTable(founderDashboardData.piutang_spp_list);
+
+            // Attach Event Handlers
+            setupEvents();
+        });
+
+        function renderKPIs() {
+            const fin = founderDashboardData.financial_kpi;
+            const aca = founderDashboardData.academic_kpi;
+            const mkt = founderDashboardData.marketing_kpi;
+
+            // Financial Cards
+            $('#kpi-saldo-kas').text(formatIDR(fin.saldo_kas_bank));
+            $('#kpi-pemasukan').text(formatIDR(fin.pemasukan_bulan_ini));
+            $('#kpi-pengeluaran').text(formatIDR(fin.pengeluaran_bulan_ini));
+            $('#kpi-surplus').text(formatIDR(fin.surplus_defisit));
+            $('#kpi-piutang-spp').text(formatIDR(fin.total_piutang_spp));
+            $('#kpi-spp-unpaid-count').text(fin.unpaid_students_count);
+            $('#kpi-laba-operasional').text(formatIDR(fin.laba_operasional));
+
+            // Academic Cards
+            $('#kpi-murid-aktif').text(aca.murid_aktif);
+            $('#kpi-murid-baru').text('+' + aca.murid_baru_bulan_ini);
+            $('#kpi-murid-keluar').text('-' + aca.murid_keluar_bulan_ini);
+            $('#kpi-total-guru').text(aca.total_guru);
+            $('#kpi-kelas-aktif').text(aca.kelas_aktif);
+
+            // Progress Bar Target Murid
+            const pct = aca.progress_target_percent;
+            $('#kpi-target-progress-text').text(`${pct}% (${aca.murid_aktif} / ${aca.target_murid_tahunan})`);
+            $('#kpi-target-progress-bar').css('width', `${pct}%`);
+
+            // Marketing Cards
+            $('#kpi-lead-crm').text(mkt.total_lead_crm);
+            $('#kpi-pendaftar-ppdb').text(mkt.pendaftar_ppdb);
+            $('#kpi-conversion-rate').text(mkt.conversion_rate_percent + '%');
+            $('#kpi-retention-rate').text(mkt.retention_rate_percent + '%');
+        }
+
+        function initCharts() {
+            // Chart 1: Cashflow 12 Bulan (Bar Chart)
+            const ctxCashflow = document.getElementById('chartCashflow').getContext('2d');
+            new Chart(ctxCashflow, {
+                type: 'bar',
+                data: {
+                    labels: founderDashboardData.cashflow_12_months.labels,
+                    datasets: [
+                        {
+                            label: 'Pemasukan (Juta Rp)',
+                            data: founderDashboardData.cashflow_12_months.pemasukan,
+                            backgroundColor: '#6b21a8',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Pengeluaran (Juta Rp)',
+                            data: founderDashboardData.cashflow_12_months.pengeluaran,
+                            backgroundColor: '#facc15',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) { return 'Rp ' + value + 'M'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Top 5 Pengeluaran (Doughnut)
+            const ctxPengeluaran = document.getElementById('chartPengeluaran').getContext('2d');
+            const topExp = founderDashboardData.top_5_pengeluaran;
+            new Chart(ctxPengeluaran, {
+                type: 'doughnut',
+                data: {
+                    labels: topExp.map(item => item.kategori),
+                    datasets: [{
+                        data: topExp.map(item => item.nominal),
+                        backgroundColor: ['#581c87', '#7e22ce', '#9333ea', '#facc15', '#eab308']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '68%'
+                }
+            });
+
+            // Populate Top Expense Text List
+            let expHtml = '';
+            topExp.forEach(item => {
+                expHtml += `
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-gray-600 truncate max-w-[140px]">${item.kategori}</span>
+                        <span class="font-bold text-gray-800">${formatIDR(item.nominal)} <span class="text-gray-400 font-normal">(${item.percent}%)</span></span>
+                    </div>
+                `;
+            });
+            $('#top-expense-list').html(expHtml);
+
+            // Chart 3: Pertumbuhan Murid (Line Chart)
+            const ctxMurid = document.getElementById('chartMurid').getContext('2d');
+            new Chart(ctxMurid, {
+                type: 'line',
+                data: {
+                    labels: founderDashboardData.student_growth_6_months.labels,
+                    datasets: [{
+                        label: 'Total Santri',
+                        data: founderDashboardData.student_growth_6_months.total_students,
+                        borderColor: '#581c87',
+                        backgroundColor: 'rgba(88, 28, 135, 0.1)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#facc15'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 200 }
+                    }
+                }
+            });
+
+            // Chart 4: Marketing Funnel (Horizontal Bar)
+            const ctxMarketing = document.getElementById('chartMarketing').getContext('2d');
+            new Chart(ctxMarketing, {
+                type: 'bar',
+                data: {
+                    labels: founderDashboardData.marketing_funnel.labels,
+                    datasets: [{
+                        axis: 'y',
+                        label: 'Orang',
+                        data: founderDashboardData.marketing_funnel.data,
+                        backgroundColor: ['#3b0764', '#581c87', '#7e22ce', '#eab308', '#facc15'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderBankAccounts() {
+            let html = '';
+            founderDashboardData.bank_accounts.forEach(acc => {
+                html += `
+                    <div class="p-4 rounded-xl border border-purple-100 bg-purple-50/30 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-semibold text-brand-dark">${acc.name}</span>
+                                <span class="text-[10px] bg-purple-100 text-brand-900 px-2 py-0.5 rounded-md font-medium">${acc.type}</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mb-3">${acc.account_no}</p>
+                        </div>
+                        <p class="text-lg font-extrabold text-brand-900">${formatIDR(acc.balance)}</p>
+                    </div>
+                `;
+            });
+            $('#bank-accounts-container').html(html);
+        }
+
+        function renderTransactions(txList) {
+            let html = '';
+            txList.forEach(tx => {
+                const isOut = tx.type === 'OUT';
+                const badgeClass = isOut ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                const sign = isOut ? '-' : '+';
+                const amountClass = isOut ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold';
+
+                html += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-gray-500 font-medium">${tx.time}</td>
+                        <td class="py-3 px-4 font-mono font-semibold text-brand-800">${tx.code}</td>
+                        <td class="py-3 px-4 text-gray-800 font-medium">${tx.desc}</td>
+                        <td class="py-3 px-4">
+                            <span class="border px-2 py-0.5 rounded-md text-[10px] ${badgeClass}">${tx.category}</span>
+                        </td>
+                        <td class="py-3 px-4 text-gray-600">${tx.account}</td>
+                        <td class="py-3 px-4 text-right ${amountClass}">${sign} ${formatIDR(tx.amount)}</td>
+                    </tr>
+                `;
+            });
+            $('#transaction-table-body').html(html);
+        }
+
+        function renderAcademicClasses() {
+            let html = '';
+            founderDashboardData.class_distribution.forEach(cls => {
+                html += `
+                    <div class="p-4 rounded-xl border border-purple-100 bg-white shadow-xs">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-brand-dark text-xs">${cls.class_name}</h4>
+                            <span class="text-[10px] bg-gold-100 text-gold-800 font-semibold px-2 py-0.5 rounded-full">${cls.students} Santri</span>
+                        </div>
+                        <p class="text-[11px] text-gray-600 mb-1"><i class="fa-solid fa-user-tie text-purple-700 mr-1"></i> ${cls.teacher}</p>
+                        <p class="text-[11px] text-gray-500"><i class="fa-solid fa-bullseye text-gold-600 mr-1"></i> Target: ${cls.target}</p>
+                    </div>
+                `;
+            });
+            $('#class-distribution-container').html(html);
+        }
+
+        function renderCampaigns() {
+            let html = '';
+            founderDashboardData.campaigns.forEach(cmp => {
+                html += `
+                    <div class="p-4 rounded-xl border border-purple-100 bg-slate-50/50 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">${cmp.channel}</span>
+                                <span class="text-[10px] ${cmp.status === 'Aktif' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'} font-semibold px-2 py-0.5 rounded-md">${cmp.status}</span>
+                            </div>
+                            <h4 class="font-bold text-gray-900 text-xs mb-3">${cmp.title}</h4>
+                            <div class="space-y-1.5 text-[11px] text-gray-600 mb-4">
+                                <div class="flex justify-between"><span>Budget:</span> <strong class="text-gray-800">${cmp.budget}</strong></div>
+                                <div class="flex justify-between"><span>Leads Masuk:</span> <strong class="text-brand-900">${cmp.leads} Leads</strong></div>
+                                <div class="flex justify-between"><span>Cost Per Lead:</span> <strong class="text-emerald-700">${cmp.cost_per_lead}</strong></div>
+                            </div>
+                        </div>
+                        <button class="w-full text-center py-1.5 bg-white border border-purple-200 text-brand-900 hover:bg-purple-50 text-xs font-semibold rounded-lg transition-colors">
+                            Detail Performa
+                        </button>
+                    </div>
+                `;
+            });
+            $('#campaigns-container').html(html);
+        }
+
+        function renderSPPTable(dataList) {
+            let html = '';
+            let totalPiutang = 0;
+            let countUnpaid = 0;
+            let sum30 = 0, sum60 = 0, sum90 = 0;
+
+            dataList.forEach(item => {
+                if (item.status === 'MENUNGGAK') {
+                    totalPiutang += item.nominal;
+                    countUnpaid++;
+                    if (item.aging_cat === '0-30') sum30 += item.nominal;
+                    if (item.aging_cat === '31-60') sum60 += item.nominal;
+                    if (item.aging_cat === '>60') sum90 += item.nominal;
+                }
+
+                let statusBadge = item.status === 'LUNAS' 
+                    ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i> Lunas</span>'
+                    : '<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-clock mr-1"></i> Menunggak</span>';
+
+                let agingBadge = '-';
+                if (item.aging_days > 0) {
+                    let color = 'bg-amber-100 text-amber-800';
+                    if (item.aging_days > 30) color = 'bg-orange-100 text-orange-800';
+                    if (item.aging_days > 60) color = 'bg-rose-100 text-rose-800';
+                    agingBadge = `<span class="${color} text-[10px] font-semibold px-2 py-0.5 rounded-md">${item.aging_days} Hari</span>`;
+                }
+
+                let actionBtn = item.status === 'MENUNGGAK'
+                    ? `<button onclick="sendWAReminder('${item.student}', '${item.parent}', '${formatIDR(item.nominal)}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors shadow-xs flex items-center gap-1 mx-auto">
+                        <i class="fa-brands fa-whatsapp text-xs"></i> Ingatkan WA
+                       </button>`
+                    : `<span class="text-gray-400 text-[10px] italic">Tidak Ada Aksi</span>`;
+
+                html += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 font-mono font-medium text-gray-500">${item.nis}</td>
+                        <td class="py-3 px-4 font-bold text-gray-800">${item.student}</td>
+                        <td class="py-3 px-4 text-gray-600">${item.class}</td>
+                        <td class="py-3 px-4 text-gray-600">${item.parent}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-right font-semibold ${item.nominal > 0 ? 'text-rose-600' : 'text-gray-400'}">${formatIDR(item.nominal)}</td>
+                        <td class="py-3 px-4 text-center">${agingBadge}</td>
+                        <td class="py-3 px-4 text-center">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            $('#spp-table-body').html(html);
+
+            // Update Summaries
+            $('#summary-total-piutang').text(formatIDR(totalPiutang));
+            $('#summary-total-count').text(countUnpaid + ' Santri Menunggak');
+            $('#summary-aging-30').text(formatIDR(sum30));
+            $('#summary-aging-60').text(formatIDR(sum60));
+            $('#summary-aging-90').text(formatIDR(sum90));
+        }
+
+        function setupEvents() {
+            // Tab switching logic
+            $('.tab-btn').on('click', function () {
+                const targetTab = $(this).attr('data-tab');
+
+                // Toggle Active Tab Buttons
+                $('.tab-btn').removeClass('active bg-brand-900 text-white shadow-sm').addClass('text-gray-600 hover:bg-purple-50 hover:text-brand-900');
+                $(this).addClass('active bg-brand-900 text-white shadow-sm').removeClass('text-gray-600 hover:bg-purple-50 hover:text-brand-900');
+
+                // Toggle Tab Content Views
+                $('.tab-content').addClass('hidden');
+                $('#' + targetTab).removeClass('hidden');
+            });
+
+            // Refresh Button Simulation
+            $('#btn-refresh').on('click', function () {
+                const btn = $(this);
+                btn.addClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-spinner fa-spin"></i> Loading...');
+                
+                setTimeout(() => {
+                    btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
+                    renderKPIs();
+                }, 600);
+            });
+
+            // Filter SPP Receivables Table
+            $('#filter-spp-status, #filter-spp-aging, #search-spp-student').on('change keyup', function () {
+                const statusFilter = $('#filter-spp-status').val();
+                const agingFilter = $('#filter-spp-aging').val();
+                const searchQuery = $('#search-spp-student').val().toLowerCase();
+
+                const filtered = founderDashboardData.piutang_spp_list.filter(item => {
+                    const matchStatus = statusFilter === 'ALL' || item.status === statusFilter;
+                    const matchAging = agingFilter === 'ALL' || item.aging_cat === agingFilter;
+                    const matchQuery = item.student.toLowerCase().includes(searchQuery) || item.nis.toLowerCase().includes(searchQuery) || item.parent.toLowerCase().includes(searchQuery);
+
+                    return matchStatus && matchAging && matchQuery;
+                });
+
+                renderSPPTable(filtered);
+            });
+
+            // Search Transactions Filter
+            $('#search-tx').on('keyup', function () {
+                const query = $(this).val().toLowerCase();
+                const filtered = founderDashboardData.recent_transactions.filter(tx => {
+                    return tx.desc.toLowerCase().includes(query) || tx.code.toLowerCase().includes(query) || tx.category.toLowerCase().includes(query);
+                });
+                renderTransactions(filtered);
+            });
+        }
+
+        /**
+         * Helper to open WhatsApp Reminder Link
+         */
+        function sendWAReminder(student, parent, nominal) {
+            const text = `Assalamu'alaikum Yth. ${parent}, menginformasikan bahwa kewajiban SPP an. ${student} di Little Haffidz Qur'an tercatat belum selesai sebesar ${nominal}. Mohon dapat melampirkan bukti transfer jika sudah melakukan pembayaran. Syukron.`;
+            const encoded = encodeURIComponent(text);
+            window.open(`https://wa.me/?text=${encoded}`, '_blank');
+        }
+    </script>
+</body>
+</html>
