@@ -1,5 +1,9 @@
-<!-- ... existing code ... -->
-    <title>{{ title }}</title>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">Smart ERP Little Haffidz Qur'an</title>
     <meta name="description" content="Smart ERP Little Haffidz Qur'an" />
     <meta name="theme-color" content="#581c87" />
 
@@ -60,7 +64,20 @@
 
     <!-- Navbar -->
     <nav id="mainNav" class="bg-white/95 backdrop-blur-md border-b border-purple-100 sticky top-0 z-40 transition-shadow duration-300">
-<!-- ... existing code ... -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-brand-900 flex items-center justify-center text-gold-400 font-bold text-lg shadow-sm">
+                    <i class="fa-solid fa-book-open border-0"></i>
+                </div>
+                <span class="font-bold text-brand-900 text-lg tracking-tight">Little Haffidz</span>
+            </div>
+            
+            <div id="nav-auth-container" class="flex items-center gap-3">
+                <!-- Populated dynamically via Frappe REST API -->
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <section class="hero-purple islamic-pattern text-white py-20 px-4 relative overflow-hidden">
         <!-- Subtle Glow Effect -->
@@ -69,7 +86,7 @@
         <div class="max-w-4xl mx-auto text-center relative z-10">
             <div class="inline-flex items-center gap-2 bg-purple-950/60 border border-gold-400/30 text-gold-300 text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
                 <i class="fa-solid fa-star text-gold-400 text-xs"></i>
-                <span>Smart ERP Little Haffidz Qur'an</span>
+                <span id="hero-badge-text">Smart ERP Little Haffidz Qur'an</span>
             </div>
             
             <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight mb-6 tracking-tight">
@@ -80,17 +97,12 @@
                 Smart ERP mengintegrasikan manajemen santri, keuangan, presensi guru, dan laporan akademik dalam satu platform terpadu.
             </p>
 
-            {% if is_logged_in %}
-            <a href="{{ default_dashboard_route }}"
-               class="inline-flex items-center gap-2.5 bg-gold-400 hover:bg-gold-500 text-gray-900 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-gold-500/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
-                <i class="fa-solid fa-grid-2"></i> Buka Dashboard Saya
-            </a>
-            {% else %}
-            <a href="/login"
-               class="inline-flex items-center gap-2.5 bg-gold-400 hover:bg-gold-500 text-gray-900 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-gold-500/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
-                <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
-            </a>
-            {% endif %}
+            <!-- Dynamic CTA Button Container -->
+            <div id="hero-cta-container" class="inline-block">
+                <div class="inline-flex items-center gap-2 bg-gold-400/20 text-gold-300 px-6 py-3 rounded-xl animate-pulse">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Memuat status...
+                </div>
+            </div>
         </div>
     </section>
 
@@ -158,14 +170,17 @@
     <!-- Footer -->
     <footer class="bg-white border-t border-purple-100 py-8 text-center text-sm text-gray-500">
         <div class="max-w-6xl mx-auto px-4">
-            <p>© {{ frappe.utils.now_datetime().year }} SmartApp — Dibangun di atas <a href="https://frappeframework.com" class="text-brand-800 font-medium hover:text-gold-600 hover:underline transition-colors">Frappe Framework</a> &amp; ERPNext</p>
+            <p>© <span id="current-year"></span> SmartApp — Dibangun di atas <a href="https://frappeframework.com" class="text-brand-800 font-medium hover:text-gold-600 hover:underline transition-colors">Frappe Framework</a> &amp; ERPNext</p>
         </div>
     </footer>
 
-    <!-- jQuery Script Integration -->
+    <!-- jQuery Script Integration & Frappe REST API Calls -->
     <script>
         $(document).ready(function () {
-            // Efek bayangan navbar saat di-scroll
+            // Set dynamic current year
+            $('#current-year').text(new Date().getFullYear());
+
+            // Navbar shadow effect on scroll
             $(window).on('scroll', function () {
                 if ($(this).scrollTop() > 10) {
                     $('#mainNav').addClass('shadow-md border-transparent').removeClass('border-purple-100');
@@ -174,7 +189,7 @@
                 }
             });
 
-            // Efek interaksi hover tambahan pada feature-card
+            // Feature card hover icon effect
             $('.feature-card').hover(
                 function() {
                     $(this).find('i').addClass('scale-110 transition-transform');
@@ -183,7 +198,115 @@
                     $(this).find('i').removeClass('scale-110');
                 }
             );
+
+            // Fetch session / user status via Frappe REST API
+            checkFrappeSession();
         });
+
+        /**
+         * Checks user login status via Frappe REST API
+         * Endpoint: /api/method/smartapp.api.dashboard.get_user_dashboards
+         */
+        function checkFrappeSession() {
+            $.ajax({
+                url: '/api/method/smartapp.api.dashboard.get_user_dashboards',
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || ''
+                },
+                success: function (response) {
+                    const data = response.message;
+                    if (data && data.logged_in) {
+                        const targetRoute = (data.default_dashboard && data.default_dashboard.route) ? data.default_dashboard.route : null;
+                        renderLoggedInState(data.full_name || data.user, targetRoute);
+                    } else {
+                        renderLoggedOutState();
+                    }
+                },
+                error: function () {
+                    // Fallback to logged out state on error or unauthorized response
+                    renderLoggedOutState();
+                }
+            });
+        }
+
+        /**
+         * Render UI elements when user is logged in
+         */
+        function renderLoggedInState(username, targetRoute) {
+            const dashboardRoute = targetRoute || '{{ default_dashboard_route if default_dashboard_route and default_dashboard_route != "/" else "/app" }}';
+
+            // Update CTA Button in Hero Section
+            $('#hero-cta-container').html(`
+                <a href="${dashboardRoute}"
+                   class="inline-flex items-center gap-2.5 bg-gold-400 hover:bg-gold-500 text-gray-900 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-gold-500/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    <i class="fa-solid fa-table-cells-large"></i> Buka Dashboard Saya
+                </a>
+            `);
+
+            // Update Navbar Auth Area
+            $('#nav-auth-container').html(`
+                <a href="${dashboardRoute}" class="text-sm font-semibold text-brand-900 hover:text-brand-700 transition-colors">
+                    Dashboard
+                </a>
+                <button onclick="handleLogout()" class="text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
+                    Keluar
+                </button>
+            `);
+        }
+
+        /**
+         * Render UI elements when user is a Guest / logged out
+         */
+        function renderLoggedOutState() {
+            const loginRoute = '/login';
+
+            // Update CTA Button in Hero Section
+            $('#hero-cta-container').html(`
+                <a href="${loginRoute}"
+                   class="inline-flex items-center gap-2.5 bg-gold-400 hover:bg-gold-500 text-gray-900 font-bold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-gold-500/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
+                </a>
+            `);
+
+            // Update Navbar Auth Area
+            $('#nav-auth-container').html(`
+                <a href="${loginRoute}" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold bg-brand-900 hover:bg-brand-800 text-white px-4 py-2 rounded-xl transition-all shadow-sm">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk
+                </a>
+            `);
+        }
+
+        /**
+         * Trigger Logout via Frappe REST API
+         */
+        function handleLogout() {
+            $.ajax({
+                url: '/api/method/logout',
+                type: 'POST',
+                headers: {
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || ''
+                },
+                success: function () {
+                    window.location.reload();
+                },
+                error: function () {
+                    window.location.href = '/login';
+                }
+            });
+        }
+
+        /**
+         * Helper function to retrieve cookie by name
+         */
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
     </script>
 </body>
 </html>
