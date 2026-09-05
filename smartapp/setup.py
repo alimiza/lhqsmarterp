@@ -20,9 +20,9 @@ DASHBOARD_TYPES = [
 
 DEFAULT_MAPPINGS = [
 	{
-		"role": "SmartApp Admin",
-		"dashboards": ["Admin", "Akademik", "Guru", "Sarpras"],
-		"default": "Admin",
+		"role": "SmartApp Founder",
+		"dashboards": ["Founder", "Admin", "Akademik", "Guru", "Sarpras"],
+		"default": "Founder",
 	},
 	{
 		"role": "SmartApp Academic Head",
@@ -43,6 +43,11 @@ DEFAULT_MAPPINGS = [
 		"role": "SmartApp Facility Manager",
 		"dashboards": ["Sarpras"],
 		"default": "Sarpras",
+	},
+	{
+			"role": "SmartApp Admin",
+			"dashboards": ["Admin"],
+			"default": "Admin",
 	},
 ]
 
