@@ -660,56 +660,306 @@
         }
 
         /**
-         * Fetch financial KPI from Frappe REST API
-         * Endpoint: /api/method/smartapp.api.dashboard.get_founder_financial_kpi
+         * Helper: dapatkan rentang tanggal awal & akhir bulan ini
          */
-        function fetchFinancialKPI(company = TARGET_COMPANY) {
+        function getCurrentMonthRange() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // 0-indexed
+            const fromDate = new Date(year, month, 1);
+            const toDate = new Date(year, month + 1, 0);
+            const pad = n => String(n).padStart(2, '0');
+            return {
+                from_date: `${fromDate.getFullYear()}-${pad(fromDate.getMonth() + 1)}-${pad(fromDate.getDate())}`,
+                to_date: `${toDate.getFullYear()}-${pad(toDate.getMonth() + 1)}-${pad(toDate.getDate())}`,
+                today: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+            };
+        }
+
+        /**
+         * Helper: buat header standar AJAX ke Frappe REST API
+         */
+        function apiHeaders() {
+            return {
+                'Accept': 'application/json',
+                'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+            };
+        }
+
+        /**
+         * 1. Saldo Kas & Bank
+         * Cara: ambil semua akun kas/bank (is_group=0), lalu panggil get_balance_on
+         *       untuk masing-masing akun, totalkan di JS.
+         * GET /api/resource/Account?fields=["name"]&filters=[["account_type","in",["Cash","Bank"]],["is_group","=",0]]
+         * GET /api/method/erpnext.accounts.utils.get_balance_on?account=<name>&date=<today>
+         */
+        function fetchSaldoKasBank(today) {
             return $.ajax({
-                url: '/api/method/smartapp.api.dashboard.get_founder_financial_kpi',
+                url: '/api/resource/Account',
                 type: 'GET',
-                data: { company: company },
+                data: {
+                    fields: JSON.stringify(['name', 'account_name', 'account_type']),
+                    filters: JSON.stringify([
+                        ['account_type', 'in', ['Cash', 'Bank']],
+                        ['is_group', '=', 0]
+                    ]),
+                    limit: 100
+                },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || ''
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                const accounts = (res && res.data) || [];
+                if (accounts.length === 0) return 0;
+
+                // Ambil saldo tiap akun secara paralel, lalu jumlahkan
+                const balanceRequests = accounts.map(function (acc) {
+                    return $.ajax({
+                        url: '/api/method/erpnext.accounts.utils.get_balance_on',
+                        type: 'GET',
+                        data: { account: acc.name, date: today },
+                        dataType: 'json',
+                        headers: apiHeaders()
+                    }).then(function (r) {
+                        // Respons: { message: <number> }
+                        return Number((r && r.message) || 0);
+                    }).catch(function () { return 0; });
+                });
+
+                return $.when.apply($, balanceRequests).then(function () {
+                    // arguments berisi masing-masing nilai saldo
+                    const balances = Array.prototype.slice.call(arguments);
+                    return balances.reduce(function (sum, val) { return sum + val; }, 0);
+                });
+            }).catch(function () { return 0; });
+        }
+
+        /**
+         * 2a. Pemasukan Bulan Ini (Payment Entry - Receive)
+         * GET /api/resource/Payment Entry?fields=["sum(paid_amount) as pemasukan"]&filters=[...]
+         */
+        function fetchPemasukanBulanIni(fromDate, toDate) {
+            return $.ajax({
+                url: '/api/resource/Payment%20Entry',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['sum(paid_amount) as pemasukan']),
+                    filters: JSON.stringify([
+                        ['payment_type', '=', 'Receive'],
+                        ['docstatus', '=', 1],
+                        ['posting_date', '>=', fromDate],
+                        ['posting_date', '<=', toDate]
+                    ]),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                const data = (res && res.data) || [];
+                return Number((data[0] && data[0].pemasukan) || 0);
+            }).catch(function () { return 0; });
+        }
+
+        /**
+         * 2b. Pengeluaran Bulan Ini (Payment Entry - Pay)
+         * GET /api/resource/Payment Entry?fields=["sum(paid_amount) as pengeluaran"]&filters=[...]
+         */
+        function fetchPengeluaranBulanIni(fromDate, toDate) {
+            return $.ajax({
+                url: '/api/resource/Payment%20Entry',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['sum(paid_amount) as pengeluaran']),
+                    filters: JSON.stringify([
+                        ['payment_type', '=', 'Pay'],
+                        ['docstatus', '=', 1],
+                        ['posting_date', '>=', fromDate],
+                        ['posting_date', '<=', toDate]
+                    ]),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                const data = (res && res.data) || [];
+                return Number((data[0] && data[0].pengeluaran) || 0);
+            }).catch(function () { return 0; });
+        }
+
+        /**
+         * 3. Laba Operasional & Surplus/Defisit
+         * Menggunakan Profit and Loss Statement report ERPNext bawaan.
+         * GET /api/method/frappe.desk.query_report.run?report_name=Profit and Loss Statement&filters={...}
+         *
+         * Laba Operasional = nilai dari baris "Operating Income" / "Gross Profit" di respons
+         * Surplus/Defisit  = Total Income - Total Expense (Net Profit/Loss) — dihitung di JS
+         *                    atau fallback: pemasukan - pengeluaran jika P&L tidak tersedia
+         */
+        function fetchProfitLoss(company, fromDate, toDate) {
+            return $.ajax({
+                url: '/api/method/frappe.desk.query_report.run',
+                type: 'GET',
+                data: {
+                    report_name: 'Profit and Loss Statement',
+                    filters: JSON.stringify({
+                        company: company,
+                        from_date: fromDate,
+                        to_date: toDate,
+                        periodicity: 'Monthly'
+                    })
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                // Respons: { message: { result: [...rows...] } }
+                const rows = (res && res.message && res.message.result) || [];
+                let labaOperasional = 0;
+                let surplusDefisit = 0;
+
+                rows.forEach(function (row) {
+                    if (!row || !row.account) return;
+                    const label = (row.account || '').toLowerCase();
+
+                    // Cari baris Gross Profit / Operating Income untuk laba operasional
+                    if (label.includes('gross profit') || label.includes('operating income')) {
+                        // Ambil nilai kolom terakhir yang berisi angka
+                        const keys = Object.keys(row).filter(k => k !== 'account' && k !== 'indent' && k !== 'parent_account' && k !== 'is_group');
+                        for (let i = keys.length - 1; i >= 0; i--) {
+                            const v = Number(row[keys[i]]);
+                            if (!isNaN(v)) { labaOperasional = v; break; }
+                        }
+                    }
+
+                    // Cari baris Net Profit / Loss untuk surplus/defisit
+                    if (label.includes('net profit') || label.includes('net loss') || label.includes('surplus') || label.includes('defisit')) {
+                        const keys = Object.keys(row).filter(k => k !== 'account' && k !== 'indent' && k !== 'parent_account' && k !== 'is_group');
+                        for (let i = keys.length - 1; i >= 0; i--) {
+                            const v = Number(row[keys[i]]);
+                            if (!isNaN(v)) { surplusDefisit = v; break; }
+                        }
+                    }
+                });
+
+                return { labaOperasional: labaOperasional, surplusDefisit: surplusDefisit };
+            }).catch(function () {
+                return { labaOperasional: 0, surplusDefisit: 0 };
             });
         }
 
         /**
-         * Asynchronously load and update financial KPI from REST API
+         * 4. Total Piutang SPP (Fees - Outstanding Amount)
+         * GET /api/resource/Fees?fields=["sum(outstanding_amount) as total_piutang_spp"]&filters=[...]
+         */
+        function fetchTotalPiutangSPP() {
+            return $.ajax({
+                url: '/api/resource/Fees',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['sum(outstanding_amount) as total_piutang_spp']),
+                    filters: JSON.stringify([
+                        ['docstatus', '=', 1],
+                        ['outstanding_amount', '>', 0]
+                    ]),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                const data = (res && res.data) || [];
+                return Number((data[0] && data[0].total_piutang_spp) || 0);
+            }).catch(function () { return 0; });
+        }
+
+        /**
+         * 5. Unpaid Students Count (jumlah santri unik dengan tunggakan SPP)
+         * GET /api/resource/Fees?fields=["count(distinct student) as unpaid_students_count"]&filters=[...]
+         */
+        function fetchUnpaidStudentsCount() {
+            return $.ajax({
+                url: '/api/resource/Fees',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['count(distinct student) as unpaid_students_count']),
+                    filters: JSON.stringify([
+                        ['docstatus', '=', 1],
+                        ['outstanding_amount', '>', 0]
+                    ]),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                const data = (res && res.data) || [];
+                return Number((data[0] && data[0].unpaid_students_count) || 0);
+            }).catch(function () { return 0; });
+        }
+
+        /**
+         * Helper: tampilkan loading spinner pada kartu KPI Keuangan
+         */
+        function setFinancialKPILoading(isLoading) {
+            const spinnerHtml = '<i class="fa-solid fa-spinner fa-spin text-purple-400 text-base"></i>';
+            if (isLoading) {
+                $('#kpi-saldo-kas').html(spinnerHtml);
+                $('#kpi-pemasukan').html(spinnerHtml);
+                $('#kpi-pengeluaran').html(spinnerHtml);
+                $('#kpi-surplus').html(spinnerHtml);
+                $('#kpi-piutang-spp').html(spinnerHtml);
+                $('#kpi-laba-operasional').html(spinnerHtml);
+            }
+        }
+
+        /**
+         * Asynchronously load and update Financial KPI dari standard ERPNext REST API.
+         *
+         * Semua request dijalankan paralel via $.when(), kemudian:
+         *   - surplus_defisit: dari P&L report; jika 0 atau gagal → pemasukan - pengeluaran
+         *   - laba_operasional: dari baris Gross Profit / Operating Income di P&L
          */
         function loadFinancialKPI(company = TARGET_COMPANY, onComplete = null) {
-            fetchFinancialKPI(company)
-                .done(function (response) {
-                    if (response && response.message) {
-                        const data = response.message;
-                        founderDashboardData.financial_kpi = {
-                            saldo_kas_bank: data.saldo_kas_bank,
-                            pemasukan_bulan_ini: data.pemasukan_bulan_ini,
-                            pengeluaran_bulan_ini: data.pengeluaran_bulan_ini,
-                            surplus_defisit: data.surplus_defisit,
-                            total_piutang_spp: data.total_piutang_spp,
-                            laba_operasional: data.laba_operasional,
-                            unpaid_students_count: data.unpaid_students_count
-                        };
-                        renderKPIs();
+            setFinancialKPILoading(true);
 
-                        if (data.period && data.period.from_date) {
-                            const pDate = new Date(data.period.from_date);
-                            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                            $('#current-date-display').text(monthNames[pDate.getMonth()] + ' ' + pDate.getFullYear());
-                        }
-                    }
-                })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Financial KPI dari REST API:', error);
-                })
-                .always(function () {
-                    if (typeof onComplete === 'function') {
-                        onComplete();
-                    }
-                });
+            const { from_date, to_date, today } = getCurrentMonthRange();
+
+            // Update label periode di header
+            const pDate = new Date(today);
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                                "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            $('#current-date-display').text(monthNames[pDate.getMonth()] + ' ' + pDate.getFullYear());
+
+            // Jalankan semua fetch secara paralel
+            $.when(
+                fetchSaldoKasBank(today),
+                fetchPemasukanBulanIni(from_date, to_date),
+                fetchPengeluaranBulanIni(from_date, to_date),
+                fetchProfitLoss(company, from_date, to_date),
+                fetchTotalPiutangSPP(),
+                fetchUnpaidStudentsCount()
+            ).then(function (saldoKasBank, pemasukan, pengeluaran, profitLoss, totalPiutang, unpaidCount) {
+                // Hitung surplus/defisit: utamakan dari P&L, fallback ke pemasukan - pengeluaran
+                const surplusDefisit = (profitLoss.surplusDefisit !== 0)
+                    ? profitLoss.surplusDefisit
+                    : (pemasukan - pengeluaran);
+
+                const labaOperasional = profitLoss.labaOperasional;
+
+                founderDashboardData.financial_kpi = {
+                    saldo_kas_bank: saldoKasBank,
+                    pemasukan_bulan_ini: pemasukan,
+                    pengeluaran_bulan_ini: pengeluaran,
+                    surplus_defisit: surplusDefisit,
+                    total_piutang_spp: totalPiutang,
+                    laba_operasional: labaOperasional,
+                    unpaid_students_count: unpaidCount
+                };
+
+                renderKPIs();
+            }).catch(function (err) {
+                console.error('Gagal mengambil Financial KPI dari REST API:', err);
+            }).always(function () {
+                if (typeof onComplete === 'function') {
+                    onComplete();
+                }
+            });
         }
 
         /**
