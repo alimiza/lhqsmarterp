@@ -1507,14 +1507,12 @@
                 let completed = 0;
                 const finish = function () {
                     completed++;
-                    if (completed >= 3) {
                         btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
                     }
                 };
 
                 loadFinancialKPI(TARGET_COMPANY, finish);
                 loadAcademicKPI(finish);
-                loadMarketingKPI(finish);
             });
 
             // Filter SPP Receivables Table
