@@ -232,19 +232,13 @@
                         <h3 class="font-bold text-brand-900 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-graduation-cap text-gold-600"></i> KPI Akademik & SDM
                         </h3>
-                        <span class="text-[11px] text-purple-700 font-medium bg-purple-50 px-2.5 py-1 rounded-lg">TA 2025/2026</span>
+                        <span class="text-[11px] text-purple-700 font-medium bg-purple-50 px-2.5 py-1 rounded-lg">TA 2026/2027</span>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <div class="p-3 rounded-xl bg-purple-50/50 border border-purple-100/80">
                             <p class="text-[11px] text-gray-500 mb-1">Murid Aktif</p>
                             <p class="text-xl font-bold text-brand-900" id="kpi-murid-aktif">0</p>
-                            <p class="text-[10px] text-gray-500 mt-1">Kapasitas: 300 Santri</p>
-                        </div>
-                        <div class="p-3 rounded-xl bg-purple-50/50 border border-purple-100/80">
-                            <p class="text-[11px] text-gray-500 mb-1">Masuk vs Keluar</p>
-                            <p class="text-sm font-bold text-gray-800"><span class="text-emerald-600" id="kpi-murid-baru">+0</span> / <span class="text-rose-600" id="kpi-murid-keluar">-0</span></p>
-                            <p class="text-[10px] text-gray-500 mt-1">Bulan Maret</p>
                         </div>
                         <div class="p-3 rounded-xl bg-purple-50/50 border border-purple-100/80">
                             <p class="text-[11px] text-gray-500 mb-1">Guru & Staff</p>
@@ -253,16 +247,6 @@
                         </div>
                     </div>
 
-                    <!-- Target Murid Tahunan Progress Bar -->
-                    <div class="mt-4 pt-3 border-t border-gray-100">
-                        <div class="flex items-center justify-between text-xs mb-1.5">
-                            <span class="font-medium text-gray-700">Target Murid Tahunan</span>
-                            <span class="font-bold text-brand-900" id="kpi-target-progress-text">80% (240 / 300)</span>
-                        </div>
-                        <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden p-0.5 border border-gray-200/50">
-                            <div id="kpi-target-progress-bar" class="hero-purple h-full rounded-full transition-all duration-700" style="width: 80%;"></div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- KPI MARKETING & PPDB -->
@@ -593,13 +577,9 @@
                 { "name": "Kas Kecil (Petty Cash)", "account_no": "KAS-UTAMA-01", "balance": 13300000, "type": "Kas Tunai" }
             ],
             "academic_kpi": {
-                "murid_aktif": 240,
-                "target_murid_tahunan": 300,
-                "murid_baru_bulan_ini": 14,
-                "murid_keluar_bulan_ini": 2,
-                "total_guru": 18,
-                "kelas_aktif": 12,
-                "progress_target_percent": 80.0
+                "murid_aktif": 0,
+                "total_guru": 0,
+                "kelas_aktif": 0
             },
             "marketing_kpi": {
                 "total_lead_crm": 210,
@@ -733,6 +713,212 @@
         }
 
         /**
+         * Fetch active students count from Frappe Education REST API
+         * Endpoint: GET /api/resource/Student
+         * Filter: filters=[["status", "=", "Active"]] & fields=["count(name) as total_active_students"]
+         */
+        function fetchActiveStudents() {
+            return $.ajax({
+                url: '/api/resource/Student',
+                type: 'GET',
+                data: {
+                    filters: JSON.stringify([["status", "=", "Active"]]),
+                    fields: JSON.stringify(["count(name) as total_active_students"])
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            }).catch(function () {
+                // Fallback jika Student menggunakan field enabled (enabled=1)
+                return $.ajax({
+                    url: '/api/resource/Student',
+                    type: 'GET',
+                    data: {
+                        filters: JSON.stringify([["enabled", "=", 1]]),
+                        fields: JSON.stringify(["count(name) as total_active_students"])
+                    },
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                    }
+                });
+            });
+        }
+
+        /**
+         * Fetch total active instructors/teachers from Frappe Education REST API
+         * Endpoint: GET /api/resource/Instructor
+         * Filter: filters=[["status", "=", "Active"]] & fields=["count(name) as total_instructors"]
+         */
+        function fetchInstructors() {
+            return $.ajax({
+                url: '/api/resource/Instructor',
+                type: 'GET',
+                data: {
+                    filters: JSON.stringify([["status", "=", "Active"]]),
+                    fields: JSON.stringify(["count(name) as total_instructors"])
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            }).catch(function () {
+                // Fallback: ambil semua Instructor tanpa filter status
+                return $.ajax({
+                    url: '/api/resource/Instructor',
+                    type: 'GET',
+                    data: {
+                        fields: JSON.stringify(["count(name) as total_instructors"])
+                    },
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                    }
+                });
+            });
+        }
+
+        /**
+         * Fetch active student groups (classes) from Frappe Education REST API
+         * Endpoint: GET /api/resource/Student Group
+         * Filter: filters=[["disabled", "=", 0]] & fields=["count(name) as total_active_groups"]
+         */
+        function fetchActiveStudentGroups() {
+            return $.ajax({
+                url: '/api/resource/Student%20Group',
+                type: 'GET',
+                data: {
+                    filters: JSON.stringify([["disabled", "=", 0]]),
+                    fields: JSON.stringify(["count(name) as total_active_groups"])
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            }).catch(function () {
+                // Fallback: ambil semua Student Group tanpa filter disabled
+                return $.ajax({
+                    url: '/api/resource/Student%20Group',
+                    type: 'GET',
+                    data: {
+                        fields: JSON.stringify(["count(name) as total_active_groups"])
+                    },
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                    }
+                });
+            });
+        }
+
+        /**
+         * Helper: tampilkan loading spinner pada kartu KPI Akademik saat data sedang diambil
+         */
+        function setAcademicKPILoading(isLoading) {
+            const spinnerHtml = '<i class="fa-solid fa-spinner fa-spin text-purple-400 text-base"></i>';
+            if (isLoading) {
+                $('#kpi-murid-aktif').html(spinnerHtml);
+                $('#kpi-total-guru').html(spinnerHtml);
+                $('#kpi-kelas-aktif').html(spinnerHtml);
+            }
+        }
+
+        /**
+         * Asynchronously load and update Academic KPI from Frappe Education REST API
+         */
+        function loadAcademicKPI(onComplete = null) {
+            // Tampilkan spinner loading pada kartu KPI Akademik
+            setAcademicKPILoading(true);
+
+            let pending = 3;
+            const checkDone = function () {
+                pending--;
+                if (pending <= 0) {
+                    renderKPIs();
+                    if (typeof onComplete === 'function') {
+                        onComplete();
+                    }
+                }
+            };
+
+            // A. Jumlah Murid Aktif — GET /api/resource/Student
+            fetchActiveStudents()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        if (first.total_active_students !== undefined) {
+                            founderDashboardData.academic_kpi.murid_aktif = Number(first.total_active_students) || 0;
+                        } else if (first.count !== undefined) {
+                            founderDashboardData.academic_kpi.murid_aktif = Number(first.count) || 0;
+                        } else {
+                            founderDashboardData.academic_kpi.murid_aktif = data.length;
+                        }
+                    } else {
+                        founderDashboardData.academic_kpi.murid_aktif = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Student dari REST API Frappe Education:', error);
+                    founderDashboardData.academic_kpi.murid_aktif = 0;
+                })
+                .always(checkDone);
+
+            // B. Total Guru — GET /api/resource/Instructor
+            fetchInstructors()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        if (first.total_instructors !== undefined) {
+                            founderDashboardData.academic_kpi.total_guru = Number(first.total_instructors) || 0;
+                        } else if (first.count !== undefined) {
+                            founderDashboardData.academic_kpi.total_guru = Number(first.count) || 0;
+                        } else {
+                            founderDashboardData.academic_kpi.total_guru = data.length;
+                        }
+                    } else {
+                        founderDashboardData.academic_kpi.total_guru = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Instructor dari REST API Frappe Education:', error);
+                    founderDashboardData.academic_kpi.total_guru = 0;
+                })
+                .always(checkDone);
+
+            // C. Kelas Aktif — GET /api/resource/Student Group
+            fetchActiveStudentGroups()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        if (first.total_active_groups !== undefined) {
+                            founderDashboardData.academic_kpi.kelas_aktif = Number(first.total_active_groups) || 0;
+                        } else if (first.count !== undefined) {
+                            founderDashboardData.academic_kpi.kelas_aktif = Number(first.count) || 0;
+                        } else {
+                            founderDashboardData.academic_kpi.kelas_aktif = data.length;
+                        }
+                    } else {
+                        founderDashboardData.academic_kpi.kelas_aktif = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Student Group dari REST API Frappe Education:', error);
+                    founderDashboardData.academic_kpi.kelas_aktif = 0;
+                })
+                .always(checkDone);
+        }
+
+        /**
          * Main Render Function
          */
         $(document).ready(function () {
@@ -741,6 +927,9 @@
 
             // Fetch live Financial KPI from REST API
             loadFinancialKPI();
+
+            // Fetch live Academic KPI from Frappe Education REST API
+            loadAcademicKPI();
             
             // Render Charts
             initCharts();
@@ -794,15 +983,15 @@
 
             // Academic Cards
             $('#kpi-murid-aktif').text(aca.murid_aktif);
-            $('#kpi-murid-baru').text('+' + aca.murid_baru_bulan_ini);
-            $('#kpi-murid-keluar').text('-' + aca.murid_keluar_bulan_ini);
             $('#kpi-total-guru').text(aca.total_guru);
             $('#kpi-kelas-aktif').text(aca.kelas_aktif);
 
             // Progress Bar Target Murid
-            const pct = aca.progress_target_percent;
-            $('#kpi-target-progress-text').text(`${pct}% (${aca.murid_aktif} / ${aca.target_murid_tahunan})`);
-            $('#kpi-target-progress-bar').css('width', `${pct}%`);
+            if (aca.target_murid_tahunan) {
+                const pct = aca.progress_target_percent || Math.round((aca.murid_aktif / aca.target_murid_tahunan) * 100);
+                $('#kpi-target-progress-text').text(`${pct}% (${aca.murid_aktif} / ${aca.target_murid_tahunan})`);
+                $('#kpi-target-progress-bar').css('width', `${pct}%`);
+            }
 
             // Marketing Cards
             $('#kpi-lead-crm').text(mkt.total_lead_crm);
@@ -1096,9 +1285,16 @@
                 const btn = $(this);
                 btn.addClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-spinner fa-spin"></i> Loading...');
                 
-                loadFinancialKPI(TARGET_COMPANY, function () {
-                    btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
-                });
+                let completed = 0;
+                const finish = function () {
+                    completed++;
+                    if (completed >= 2) {
+                        btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
+                    }
+                };
+
+                loadFinancialKPI(TARGET_COMPANY, finish);
+                loadAcademicKPI(finish);
             });
 
             // Filter SPP Receivables Table
