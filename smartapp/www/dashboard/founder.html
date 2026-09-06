@@ -582,10 +582,10 @@
                 "kelas_aktif": 0
             },
             "marketing_kpi": {
-                "total_lead_crm": 210,
-                "pendaftar_ppdb": 85,
-                "conversion_rate_percent": 28.5,
-                "retention_rate_percent": 96.2
+                "total_lead_crm": 0,
+                "pendaftar_ppdb": 0,
+                "conversion_rate_percent": 0,
+                "retention_rate_percent": 0
             },
             "cashflow_12_months": {
                 "labels": ["Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des", "Jan", "Feb", "Mar"],
@@ -819,6 +819,222 @@
         }
 
         /**
+         * Fetch total Lead CRM dari Frappe CRM REST API
+         * Endpoint: GET /api/resource/Lead
+         * Menghitung jumlah seluruh record Lead (count)
+         */
+        function fetchTotalLeads() {
+            return $.ajax({
+                url: '/api/resource/Lead',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['count(name) as total_leads']),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            });
+        }
+
+        /**
+         * Fetch total pendaftar PPDB dari Frappe Education REST API
+         * Endpoint: GET /api/resource/Student Applicant
+         * Menghitung jumlah seluruh record Student Applicant
+         */
+        function fetchTotalApplicants() {
+            return $.ajax({
+                url: '/api/resource/Student%20Applicant',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['count(name) as total_applicants']),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            });
+        }
+
+        /**
+         * Fetch Lead dengan status "Converted" untuk perhitungan conversion rate
+         * Endpoint: GET /api/resource/Lead?filters=[["status","=","Converted"]]
+         * Conversion Rate = (Lead Converted / Total Lead) * 100
+         */
+        function fetchConvertedLeads() {
+            return $.ajax({
+                url: '/api/resource/Lead',
+                type: 'GET',
+                data: {
+                    filters: JSON.stringify([['status', '=', 'Converted']]),
+                    fields: JSON.stringify(['count(name) as converted_leads']),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            });
+        }
+
+        /**
+         * Fetch data Student Group Student untuk perhitungan retention rate
+         * Endpoint: GET /api/resource/Student Group Student
+         *
+         * Strategi retention rate:
+         *   Retention Rate = (Jumlah Student Group Student aktif saat ini /
+         *                     Jumlah Student aktif total) * 100
+         * Jika Student aktif belum tersedia, Student Group Students digunakan sebagai basis.
+         */
+        function fetchStudentGroupStudents() {
+            return $.ajax({
+                url: '/api/resource/Student%20Group%20Student',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['count(name) as total_group_students']),
+                    limit: 1
+                },
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                }
+            });
+        }
+
+        /**
+         * Helper: tampilkan loading spinner pada kartu KPI Marketing saat data sedang diambil
+         */
+        function setMarketingKPILoading(isLoading) {
+            const spinnerHtml = '<i class="fa-solid fa-spinner fa-spin text-purple-400 text-base"></i>';
+            if (isLoading) {
+                $('#kpi-lead-crm').html(spinnerHtml);
+                $('#kpi-pendaftar-ppdb').html(spinnerHtml);
+                $('#kpi-conversion-rate').html(spinnerHtml);
+                $('#kpi-retention-rate').html(spinnerHtml);
+            }
+        }
+
+        /**
+         * Asynchronously load Marketing KPI dari Frappe REST API standar:
+         *   1. Total Lead CRM  → GET /api/resource/Lead (count all)
+         *   2. Pendaftar PPDB  → GET /api/resource/Student Applicant (count all)
+         *   3. Conversion Rate → (Lead status=Converted / Total Lead) * 100  [dihitung di JS]
+         *   4. Retention Rate  → (Student Group Student / Student aktif) * 100 [dihitung di JS]
+         */
+        function loadMarketingKPI(onComplete) {
+            setMarketingKPILoading(true);
+
+            let pending = 4;
+            let totalLeads = 0;
+            let convertedLeads = 0;
+            let totalGroupStudents = 0;
+
+            const checkDone = function () {
+                pending--;
+                if (pending > 0) return;
+
+                // --- Kalkulasi Conversion Rate (Lead → Murid) ---
+                // Formula: (Lead Converted / Total Lead) * 100
+                const convRate = (totalLeads > 0)
+                    ? parseFloat(((convertedLeads / totalLeads) * 100).toFixed(1))
+                    : 0;
+
+                // --- Kalkulasi Retention Rate (Santri Bertahan) ---
+                // Basis: jumlah Student aktif dari Academic KPI (sudah diload sebelumnya)
+                // Formula: (Student Group Student aktif / Student aktif) * 100
+                // Maksimum 100% (cap). Jika Student aktif = 0, gunakan totalGroupStudents sebagai basis.
+                const basis = (founderDashboardData.academic_kpi.murid_aktif > 0)
+                    ? founderDashboardData.academic_kpi.murid_aktif
+                    : totalGroupStudents;
+                const retentionRate = (basis > 0 && totalGroupStudents > 0)
+                    ? parseFloat(Math.min((totalGroupStudents / basis) * 100, 100).toFixed(1))
+                    : 0;
+
+                founderDashboardData.marketing_kpi.total_lead_crm = totalLeads;
+                founderDashboardData.marketing_kpi.conversion_rate_percent = convRate;
+                founderDashboardData.marketing_kpi.retention_rate_percent = retentionRate;
+
+                renderKPIs();
+                if (typeof onComplete === 'function') onComplete();
+            };
+
+            // A. Total Lead CRM — GET /api/resource/Lead
+            fetchTotalLeads()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        totalLeads = Number(first.total_leads !== undefined ? first.total_leads : (first.count || data.length)) || 0;
+                    } else {
+                        totalLeads = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Lead dari REST API Frappe CRM:', error);
+                    totalLeads = 0;
+                })
+                .always(checkDone);
+
+            // B. Pendaftar PPDB — GET /api/resource/Student Applicant
+            fetchTotalApplicants()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        founderDashboardData.marketing_kpi.pendaftar_ppdb =
+                            Number(first.total_applicants !== undefined ? first.total_applicants : (first.count || data.length)) || 0;
+                    } else {
+                        founderDashboardData.marketing_kpi.pendaftar_ppdb = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Student Applicant dari REST API Frappe Education:', error);
+                    founderDashboardData.marketing_kpi.pendaftar_ppdb = 0;
+                })
+                .always(checkDone);
+
+            // C. Lead Converted — untuk conversion rate
+            fetchConvertedLeads()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        convertedLeads = Number(first.converted_leads !== undefined ? first.converted_leads : (first.count || data.length)) || 0;
+                    } else {
+                        convertedLeads = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil Lead Converted dari REST API Frappe CRM:', error);
+                    convertedLeads = 0;
+                })
+                .always(checkDone);
+
+            // D. Student Group Student — untuk retention rate
+            fetchStudentGroupStudents()
+                .done(function (res) {
+                    const data = (res && res.data) || [];
+                    if (data.length > 0) {
+                        const first = data[0];
+                        totalGroupStudents = Number(first.total_group_students !== undefined ? first.total_group_students : (first.count || data.length)) || 0;
+                    } else {
+                        totalGroupStudents = 0;
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Gagal mengambil data Student Group Student dari REST API Frappe Education:', error);
+                    totalGroupStudents = 0;
+                })
+                .always(checkDone);
+        }
+
+        /**
          * Helper: tampilkan loading spinner pada kartu KPI Akademik saat data sedang diambil
          */
         function setAcademicKPILoading(isLoading) {
@@ -930,6 +1146,9 @@
 
             // Fetch live Academic KPI from Frappe Education REST API
             loadAcademicKPI();
+
+            // Fetch live Marketing KPI from Frappe CRM & Education REST API
+            loadMarketingKPI();
             
             // Render Charts
             initCharts();
@@ -1288,13 +1507,14 @@
                 let completed = 0;
                 const finish = function () {
                     completed++;
-                    if (completed >= 2) {
+                    if (completed >= 3) {
                         btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
                     }
                 };
 
                 loadFinancialKPI(TARGET_COMPANY, finish);
                 loadAcademicKPI(finish);
+                loadMarketingKPI(finish);
             });
 
             // Filter SPP Receivables Table
