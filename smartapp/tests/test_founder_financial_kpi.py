@@ -73,3 +73,31 @@ class TestFounderFinancialKPI(unittest.TestCase):
 		self.assertEqual(data["surplus_defisit"], 0.0)
 		self.assertEqual(data["total_piutang_spp"], 0.0)
 		self.assertEqual(data["unpaid_students_count"], 0)
+
+	def test_founder_get_context_company_resolution(self):
+		"""get_context should populate companies and select target_company correctly."""
+		from smartapp.www.dashboard.founder import get_context
+
+		frappe.set_user("Administrator")
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict()
+
+		get_context(context)
+
+		self.assertIn("companies", context)
+		self.assertIn("target_company", context)
+		self.assertTrue(context.target_company)
+
+	def test_founder_get_context_with_requested_company(self):
+		"""get_context should respect the requested company query parameter."""
+		from smartapp.www.dashboard.founder import get_context
+
+		frappe.set_user("Administrator")
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict({"company": self.company})
+
+		get_context(context)
+
+		self.assertEqual(context.target_company, self.company)
+		self.assertIsNotNone(context.initial_financial_kpi)
+

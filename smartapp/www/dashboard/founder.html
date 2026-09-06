@@ -81,9 +81,9 @@
 
     <!-- Top Executive Header -->
     <header class="hero-purple islamic-pattern text-white sticky top-0 z-50 border-b border-purple-900/50 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gold-400 text-brand-dark flex items-center justify-center font-bold text-xl shadow-lg shadow-gold-500/20">
+                <div class="w-10 h-10 rounded-xl bg-gold-400 text-brand-dark flex items-center justify-center font-bold text-xl shadow-lg shadow-gold-500/20 flex-shrink-0">
                     <i class="fa-solid fa-crown"></i>
                 </div>
                 <div>
@@ -91,12 +91,32 @@
                         <h1 class="text-lg font-bold tracking-tight text-white">Dashboard Founder</h1>
                         <span class="bg-gold-400/20 border border-gold-400/40 text-gold-300 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">Executive</span>
                     </div>
-                    <p class="text-xs text-purple-200">Little Haffidz Qur'an Smart ERP</p>
+                    <p class="text-xs text-purple-200 flex items-center gap-1.5" id="header-company-subtitle">
+                        <i class="fa-regular fa-building text-gold-400 text-[11px]"></i>
+                        <span id="current-company-label">{{ target_company or "Little Hafidz Qur'an (Demo)" }}</span>
+                    </p>
                 </div>
             </div>
 
             <!-- Quick Controls & Profile -->
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Dropdown Pemilihan Company -->
+                <div class="flex items-center bg-purple-950/80 border border-purple-600/70 hover:border-gold-400/60 rounded-xl px-2.5 py-1.5 text-xs text-white shadow-inner gap-2 transition-colors">
+                    <i class="fa-solid fa-building text-gold-400 text-xs"></i>
+                    <span class="text-purple-300 font-medium text-[11px] hidden sm:inline">Perusahaan:</span>
+                    <select id="company-select" class="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer pr-1 border-0">
+                        {% if companies %}
+                            {% for c in companies %}
+                                <option value="{{ c.name }}" class="bg-purple-950 text-white" {% if c.name == target_company %}selected{% endif %}>
+                                    {{ c.company_name or c.name }}
+                                </option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="{{ target_company }}" class="bg-purple-950 text-white" selected>{{ target_company }}</option>
+                        {% endif %}
+                    </select>
+                </div>
+
                 <div class="hidden sm:flex items-center bg-purple-950/60 border border-purple-700/50 rounded-xl px-3 py-1.5 text-xs text-purple-200 gap-2">
                     <i class="fa-regular fa-calendar-check text-gold-400"></i>
                     <span id="current-date-display">Maret 2026</span>
@@ -553,7 +573,9 @@
         /**
          * Company and Initial SSR Data
          */
-        const TARGET_COMPANY = "{{ target_company or "Little Hafidz Qur'an (Demo)" }}";
+        let currentCompany = "{{ target_company or "Little Hafidz Qur'an (Demo)" }}";
+        let currentCompanyDetail = null;
+        const TARGET_COMPANY = currentCompany;
         const initialFinancialKPI = {{ (initial_financial_kpi or {}) | tojson }};
 
         const defaultFinancialKPI = {
@@ -678,28 +700,153 @@
 
         /**
          * Helper: buat header standar AJAX ke Frappe REST API
+         * Mendukung standard CSRF session dan Authorization: token [api_key]:[api_secret]
          */
         function apiHeaders() {
-            return {
+            const headers = {
                 'Accept': 'application/json',
-                'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
+                'Content-Type': 'application/json'
             };
+            const csrf = getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '');
+            if (csrf) {
+                headers['X-Frappe-CSRF-Token'] = csrf;
+            }
+            const token = window.SMARTAPP_API_TOKEN || localStorage.getItem('smartapp_token') || localStorage.getItem('api_token');
+            if (token) {
+                headers['Authorization'] = token.startsWith('token ') ? token : `token ${token}`;
+            }
+            return headers;
         }
 
         /**
-         * 1. Saldo Kas & Bank
-         * Cara: ambil semua akun kas/bank (is_group=0), lalu panggil get_balance_on
-         *       untuk masing-masing akun, totalkan di JS.
-         * GET /api/resource/Account?fields=["name"]&filters=[["account_type","in",["Cash","Bank"]],["is_group","=",0]]
-         * GET /api/method/erpnext.accounts.utils.get_balance_on?account=<name>&date=<today>
+         * Helper: Escape HTML string to prevent XSS
          */
-        function fetchSaldoKasBank(today) {
+        function escapeHtml(str) {
+            if (!str) return '';
+            return $('<div>').text(str).html();
+        }
+
+        /**
+         * 1. Mengambil Semua Data (List Company)
+         * Endpoint: GET /api/resource/Company
+         * Mengambil daftar seluruh perusahaan di ERPNext.
+         */
+        function fetchCompanyList() {
+            return $.ajax({
+                url: '/api/resource/Company',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['name', 'company_name', 'default_currency', 'country']),
+                    limit_page_length: 100,
+                    order_by: 'name asc'
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                return (res && res.data) || [];
+            }).catch(function (err) {
+                console.warn('Gagal memuat list Company dari /api/resource/Company:', err);
+                return [];
+            });
+        }
+
+        /**
+         * 2. Mengambil Detail Satu Company
+         * Endpoint: GET /api/resource/Company/<encoded_company_name>
+         * Mengambil detail satu perusahaan tertentu (misal PT Maju Bersama).
+         */
+        function fetchCompanyDetail(companyName) {
+            if (!companyName) return Promise.resolve(null);
+            const encoded = encodeURIComponent(companyName);
+            return $.ajax({
+                url: '/api/resource/Company/' + encoded,
+                type: 'GET',
+                dataType: 'json',
+                headers: apiHeaders()
+            }).then(function (res) {
+                return (res && res.data) || null;
+            }).catch(function (err) {
+                console.warn('Gagal memuat detail Company dari /api/resource/Company/' + encoded + ':', err);
+                return null;
+            });
+        }
+
+        /**
+         * Inisialisasi Dropdown Company dan Event Listener
+         */
+        function initCompanyDropdown() {
+            fetchCompanyList().done(function (companies) {
+                if (!companies || companies.length === 0) return;
+
+                const select = $('#company-select');
+                const selectedVal = select.val() || currentCompany;
+
+                select.empty();
+                companies.forEach(function (c) {
+                    const label = c.company_name ? `${c.company_name} (${c.name})` : c.name;
+                    const isSelected = (c.name === selectedVal || c.company_name === selectedVal);
+                    select.append(
+                        $('<option></option>')
+                            .val(c.name)
+                            .text(label)
+                            .prop('selected', isSelected)
+                            .addClass('bg-purple-950 text-white')
+                    );
+                });
+
+                if (!select.val() && companies.length > 0) {
+                    select.val(companies[0].name);
+                    currentCompany = companies[0].name;
+                }
+            });
+
+            $('#company-select').on('change', function () {
+                const selected = $(this).val();
+                switchCompany(selected);
+            });
+        }
+
+        /**
+         * Switch Company Handler: memuat detail company dan refresh semua data dashboard
+         */
+        function switchCompany(companyName) {
+            if (!companyName) return;
+            currentCompany = companyName;
+
+            $('#current-company-label').text(companyName);
+
+            // Update URL query parameter
+            try {
+                const url = new URL(window.location);
+                url.searchParams.set('company', companyName);
+                window.history.replaceState({}, '', url);
+            } catch (e) {}
+
+            // Ambil Detail Company
+            fetchCompanyDetail(companyName).done(function (detail) {
+                currentCompanyDetail = detail;
+                if (detail && detail.company_name) {
+                    $('#current-company-label').text(detail.company_name);
+                }
+            });
+
+            // Refresh seluruh data dashboard untuk company ini
+            refreshAllDashboardData(companyName);
+        }
+
+        /**
+         * 1. Saldo Kas & Bank (sesuai Company)
+         * GET /api/resource/Account?fields=[...]&filters=[["company","=",company],["account_type","in",["Cash","Bank"]],["is_group","=",0]]
+         * GET /api/method/erpnext.accounts.utils.get_balance_on?account=<name>&date=<today>&company=<company>
+         */
+        function fetchSaldoKasBank(company, today) {
             return $.ajax({
                 url: '/api/resource/Account',
                 type: 'GET',
                 data: {
                     fields: JSON.stringify(['name', 'account_name', 'account_type']),
                     filters: JSON.stringify([
+                        ['company', '=', company],
                         ['account_type', 'in', ['Cash', 'Bank']],
                         ['is_group', '=', 0]
                     ]),
@@ -711,22 +858,19 @@
                 const accounts = (res && res.data) || [];
                 if (accounts.length === 0) return 0;
 
-                // Ambil saldo tiap akun secara paralel, lalu jumlahkan
                 const balanceRequests = accounts.map(function (acc) {
                     return $.ajax({
                         url: '/api/method/erpnext.accounts.utils.get_balance_on',
                         type: 'GET',
-                        data: { account: acc.name, date: today },
+                        data: { account: acc.name, date: today, company: company },
                         dataType: 'json',
                         headers: apiHeaders()
                     }).then(function (r) {
-                        // Respons: { message: <number> }
                         return Number((r && r.message) || 0);
                     }).catch(function () { return 0; });
                 });
 
                 return $.when.apply($, balanceRequests).then(function () {
-                    // arguments berisi masing-masing nilai saldo
                     const balances = Array.prototype.slice.call(arguments);
                     return balances.reduce(function (sum, val) { return sum + val; }, 0);
                 });
@@ -734,16 +878,17 @@
         }
 
         /**
-         * 2a. Pemasukan Bulan Ini (Payment Entry - Receive)
+         * 2a. Pemasukan Bulan Ini (Payment Entry - Receive sesuai Company)
          * GET /api/resource/Payment Entry?fields=["sum(paid_amount) as pemasukan"]&filters=[...]
          */
-        function fetchPemasukanBulanIni(fromDate, toDate) {
+        function fetchPemasukanBulanIni(company, fromDate, toDate) {
             return $.ajax({
                 url: '/api/resource/Payment%20Entry',
                 type: 'GET',
                 data: {
                     fields: JSON.stringify(['sum(paid_amount) as pemasukan']),
                     filters: JSON.stringify([
+                        ['company', '=', company],
                         ['payment_type', '=', 'Receive'],
                         ['docstatus', '=', 1],
                         ['posting_date', '>=', fromDate],
@@ -760,16 +905,17 @@
         }
 
         /**
-         * 2b. Pengeluaran Bulan Ini (Payment Entry - Pay)
+         * 2b. Pengeluaran Bulan Ini (Payment Entry - Pay sesuai Company)
          * GET /api/resource/Payment Entry?fields=["sum(paid_amount) as pengeluaran"]&filters=[...]
          */
-        function fetchPengeluaranBulanIni(fromDate, toDate) {
+        function fetchPengeluaranBulanIni(company, fromDate, toDate) {
             return $.ajax({
                 url: '/api/resource/Payment%20Entry',
                 type: 'GET',
                 data: {
                     fields: JSON.stringify(['sum(paid_amount) as pengeluaran']),
                     filters: JSON.stringify([
+                        ['company', '=', company],
                         ['payment_type', '=', 'Pay'],
                         ['docstatus', '=', 1],
                         ['posting_date', '>=', fromDate],
@@ -786,13 +932,8 @@
         }
 
         /**
-         * 3. Laba Operasional & Surplus/Defisit
-         * Menggunakan Profit and Loss Statement report ERPNext bawaan.
+         * 3. Laba Operasional & Surplus/Defisit sesuai Company
          * GET /api/method/frappe.desk.query_report.run?report_name=Profit and Loss Statement&filters={...}
-         *
-         * Laba Operasional = nilai dari baris "Operating Income" / "Gross Profit" di respons
-         * Surplus/Defisit  = Total Income - Total Expense (Net Profit/Loss) — dihitung di JS
-         *                    atau fallback: pemasukan - pengeluaran jika P&L tidak tersedia
          */
         function fetchProfitLoss(company, fromDate, toDate) {
             return $.ajax({
@@ -810,7 +951,6 @@
                 dataType: 'json',
                 headers: apiHeaders()
             }).then(function (res) {
-                // Respons: { message: { result: [...rows...] } }
                 const rows = (res && res.message && res.message.result) || [];
                 let labaOperasional = 0;
                 let surplusDefisit = 0;
@@ -819,9 +959,7 @@
                     if (!row || !row.account) return;
                     const label = (row.account || '').toLowerCase();
 
-                    // Cari baris Gross Profit / Operating Income untuk laba operasional
                     if (label.includes('gross profit') || label.includes('operating income')) {
-                        // Ambil nilai kolom terakhir yang berisi angka
                         const keys = Object.keys(row).filter(k => k !== 'account' && k !== 'indent' && k !== 'parent_account' && k !== 'is_group');
                         for (let i = keys.length - 1; i >= 0; i--) {
                             const v = Number(row[keys[i]]);
@@ -829,7 +967,6 @@
                         }
                     }
 
-                    // Cari baris Net Profit / Loss untuk surplus/defisit
                     if (label.includes('net profit') || label.includes('net loss') || label.includes('surplus') || label.includes('defisit')) {
                         const keys = Object.keys(row).filter(k => k !== 'account' && k !== 'indent' && k !== 'parent_account' && k !== 'is_group');
                         for (let i = keys.length - 1; i >= 0; i--) {
@@ -846,16 +983,16 @@
         }
 
         /**
-         * 4. Total Piutang SPP (Fees - Outstanding Amount)
-         * GET /api/resource/Fees?fields=["sum(outstanding_amount) as total_piutang_spp"]&filters=[...]
+         * 4. Total Piutang SPP (Fees / Sales Invoice sesuai Company)
          */
-        function fetchTotalPiutangSPP() {
+        function fetchTotalPiutangSPP(company) {
             return $.ajax({
                 url: '/api/resource/Fees',
                 type: 'GET',
                 data: {
                     fields: JSON.stringify(['sum(outstanding_amount) as total_piutang_spp']),
                     filters: JSON.stringify([
+                        ['company', '=', company],
                         ['docstatus', '=', 1],
                         ['outstanding_amount', '>', 0]
                     ]),
@@ -866,20 +1003,40 @@
             }).then(function (res) {
                 const data = (res && res.data) || [];
                 return Number((data[0] && data[0].total_piutang_spp) || 0);
-            }).catch(function () { return 0; });
+            }).catch(function () {
+                // Fallback ke Sales Invoice
+                return $.ajax({
+                    url: '/api/resource/Sales%20Invoice',
+                    type: 'GET',
+                    data: {
+                        fields: JSON.stringify(['sum(outstanding_amount) as total_piutang_spp']),
+                        filters: JSON.stringify([
+                            ['company', '=', company],
+                            ['docstatus', '=', 1],
+                            ['outstanding_amount', '>', 0]
+                        ]),
+                        limit: 1
+                    },
+                    dataType: 'json',
+                    headers: apiHeaders()
+                }).then(function (r) {
+                    const d = (r && r.data) || [];
+                    return Number((d[0] && d[0].total_piutang_spp) || 0);
+                }).catch(function () { return 0; });
+            });
         }
 
         /**
-         * 5. Unpaid Students Count (jumlah santri unik dengan tunggakan SPP)
-         * GET /api/resource/Fees?fields=["count(distinct student) as unpaid_students_count"]&filters=[...]
+         * 5. Unpaid Students Count sesuai Company
          */
-        function fetchUnpaidStudentsCount() {
+        function fetchUnpaidStudentsCount(company) {
             return $.ajax({
                 url: '/api/resource/Fees',
                 type: 'GET',
                 data: {
                     fields: JSON.stringify(['count(distinct student) as unpaid_students_count']),
                     filters: JSON.stringify([
+                        ['company', '=', company],
                         ['docstatus', '=', 1],
                         ['outstanding_amount', '>', 0]
                     ]),
@@ -890,7 +1047,26 @@
             }).then(function (res) {
                 const data = (res && res.data) || [];
                 return Number((data[0] && data[0].unpaid_students_count) || 0);
-            }).catch(function () { return 0; });
+            }).catch(function () {
+                return $.ajax({
+                    url: '/api/resource/Sales%20Invoice',
+                    type: 'GET',
+                    data: {
+                        fields: JSON.stringify(['count(distinct customer) as unpaid_students_count']),
+                        filters: JSON.stringify([
+                            ['company', '=', company],
+                            ['docstatus', '=', 1],
+                            ['outstanding_amount', '>', 0]
+                        ]),
+                        limit: 1
+                    },
+                    dataType: 'json',
+                    headers: apiHeaders()
+                }).then(function (r) {
+                    const d = (r && r.data) || [];
+                    return Number((d[0] && d[0].unpaid_students_count) || 0);
+                }).catch(function () { return 0; });
+            });
         }
 
         /**
@@ -909,38 +1085,62 @@
         }
 
         /**
-         * Asynchronously load and update Financial KPI dari standard ERPNext REST API.
-         *
-         * Semua request dijalankan paralel via $.when(), kemudian:
-         *   - surplus_defisit: dari P&L report; jika 0 atau gagal → pemasukan - pengeluaran
-         *   - laba_operasional: dari baris Gross Profit / Operating Income di P&L
+         * Asynchronously load and update Financial KPI dari ERPNext REST API sesuai Company.
          */
-        function loadFinancialKPI(company = TARGET_COMPANY, onComplete = null) {
+        function loadFinancialKPI(company = currentCompany, onComplete = null) {
+            company = company || currentCompany;
             setFinancialKPILoading(true);
 
             const { from_date, to_date, today } = getCurrentMonthRange();
 
-            // Update label periode di header
             const pDate = new Date(today);
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
                                 "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             $('#current-date-display').text(monthNames[pDate.getMonth()] + ' ' + pDate.getFullYear());
 
-            // Jalankan semua fetch secara paralel
+            // 1. Coba whitelisted calculation get_founder_financial_kpi jika tersedia
+            $.ajax({
+                url: '/api/method/smartapp.api.dashboard.get_founder_financial_kpi',
+                type: 'GET',
+                data: { company: company, date: today },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).done(function (res) {
+                const kpi = (res && res.message);
+                if (kpi && typeof kpi.saldo_kas_bank === 'number') {
+                    founderDashboardData.financial_kpi = {
+                        saldo_kas_bank: kpi.saldo_kas_bank,
+                        pemasukan_bulan_ini: kpi.pemasukan_bulan_ini,
+                        pengeluaran_bulan_ini: kpi.pengeluaran_bulan_ini,
+                        surplus_defisit: kpi.surplus_defisit,
+                        total_piutang_spp: kpi.total_piutang_spp,
+                        laba_operasional: kpi.laba_operasional,
+                        unpaid_students_count: kpi.unpaid_students_count
+                    };
+                    renderKPIs();
+                    if (typeof onComplete === 'function') onComplete();
+                    return;
+                }
+                fallbackRestKPI(company, today, from_date, to_date, onComplete);
+            }).fail(function () {
+                fallbackRestKPI(company, today, from_date, to_date, onComplete);
+            });
+        }
+
+        function fallbackRestKPI(company, today, from_date, to_date, onComplete) {
             $.when(
-                fetchSaldoKasBank(today),
-                fetchPemasukanBulanIni(from_date, to_date),
-                fetchPengeluaranBulanIni(from_date, to_date),
+                fetchSaldoKasBank(company, today),
+                fetchPemasukanBulanIni(company, from_date, to_date),
+                fetchPengeluaranBulanIni(company, from_date, to_date),
                 fetchProfitLoss(company, from_date, to_date),
-                fetchTotalPiutangSPP(),
-                fetchUnpaidStudentsCount()
+                fetchTotalPiutangSPP(company),
+                fetchUnpaidStudentsCount(company)
             ).then(function (saldoKasBank, pemasukan, pengeluaran, profitLoss, totalPiutang, unpaidCount) {
-                // Hitung surplus/defisit: utamakan dari P&L, fallback ke pemasukan - pengeluaran
                 const surplusDefisit = (profitLoss.surplusDefisit !== 0)
                     ? profitLoss.surplusDefisit
                     : (pemasukan - pengeluaran);
 
-                const labaOperasional = profitLoss.labaOperasional;
+                const labaOperasional = profitLoss.labaOperasional || surplusDefisit;
 
                 founderDashboardData.financial_kpi = {
                     saldo_kas_bank: saldoKasBank,
@@ -960,6 +1160,305 @@
                     onComplete();
                 }
             });
+        }
+
+        /**
+         * Load Rekening & Kas Lembaga untuk Company terpilih
+         */
+        function loadBankAccounts(company) {
+            company = company || currentCompany;
+            $('#bank-accounts-container').html('<div class="col-span-1 sm:col-span-3 text-center py-6 text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekening kas & bank...</div>');
+            const { today } = getCurrentMonthRange();
+
+            $.ajax({
+                url: '/api/resource/Account',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['name', 'account_name', 'account_type', 'account_number']),
+                    filters: JSON.stringify([
+                        ['company', '=', company],
+                        ['account_type', 'in', ['Cash', 'Bank']],
+                        ['is_group', '=', 0]
+                    ]),
+                    limit: 50
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).done(function (res) {
+                const accounts = (res && res.data) || [];
+                if (accounts.length === 0) {
+                    $('#bank-accounts-container').html(
+                        `<div class="col-span-1 sm:col-span-3 text-center py-8 text-gray-400 text-xs bg-slate-50 rounded-xl border border-dashed border-gray-200">
+                            <i class="fa-solid fa-building-columns text-gray-300 text-2xl mb-2 block"></i>
+                            Belum ada akun kas atau bank terdaftar untuk <strong>${escapeHtml(company)}</strong>.
+                        </div>`
+                    );
+                    founderDashboardData.bank_accounts = [];
+                    return;
+                }
+
+                const balancePromises = accounts.map(function (acc) {
+                    return $.ajax({
+                        url: '/api/method/erpnext.accounts.utils.get_balance_on',
+                        type: 'GET',
+                        data: { account: acc.name, date: today, company: company },
+                        dataType: 'json',
+                        headers: apiHeaders()
+                    }).then(function (r) {
+                        return {
+                            name: acc.account_name || acc.name,
+                            account_no: acc.account_number || acc.name,
+                            balance: Number((r && r.message) || 0),
+                            type: acc.account_type === 'Cash' ? 'Kas Tunai' : 'Bank Utama'
+                        };
+                    }).catch(function () {
+                        return {
+                            name: acc.account_name || acc.name,
+                            account_no: acc.account_number || acc.name,
+                            balance: 0,
+                            type: acc.account_type === 'Cash' ? 'Kas Tunai' : 'Bank Utama'
+                        };
+                    });
+                });
+
+                $.when.apply($, balancePromises).done(function () {
+                    const results = Array.prototype.slice.call(arguments);
+                    founderDashboardData.bank_accounts = results;
+                    renderBankAccounts();
+                });
+            }).fail(function () {
+                renderBankAccounts();
+            });
+        }
+
+        /**
+         * Load Transaksi Pembayaran / Mutasi Kas untuk Company terpilih
+         */
+        function loadTransactions(company) {
+            company = company || currentCompany;
+            $('#transaction-table-body').html('<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat mutasi transaksi...</td></tr>');
+
+            $.ajax({
+                url: '/api/resource/Payment%20Entry',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['name', 'posting_date', 'creation', 'payment_type', 'paid_amount', 'paid_to', 'paid_from', 'party_name', 'remarks']),
+                    filters: JSON.stringify([
+                        ['company', '=', company],
+                        ['docstatus', '=', 1]
+                    ]),
+                    order_by: 'posting_date desc, creation desc',
+                    limit: 15
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).done(function (res) {
+                const entries = (res && res.data) || [];
+                if (entries.length === 0) {
+                    $('#transaction-table-body').html(
+                        `<tr><td colspan="6" class="text-center py-8 text-gray-400 text-xs">
+                            <i class="fa-solid fa-receipt text-gray-300 text-xl mb-1 block"></i>
+                            Belum ada transaksi pembayaran tercatat untuk <strong>${escapeHtml(company)}</strong>.
+                        </td></tr>`
+                    );
+                    founderDashboardData.recent_transactions = [];
+                    return;
+                }
+
+                const txList = entries.map(function (e) {
+                    const isReceive = e.payment_type === 'Receive';
+                    return {
+                        time: e.posting_date,
+                        code: e.name,
+                        desc: e.remarks || (isReceive ? ('Penerimaan dari ' + (e.party_name || 'Pelanggan')) : ('Pembayaran ke ' + (e.party_name || 'Pemasok'))),
+                        category: isReceive ? 'Pemasukan' : 'Pengeluaran',
+                        account: isReceive ? (e.paid_to || 'Bank/Kas') : (e.paid_from || 'Bank/Kas'),
+                        amount: Number(e.paid_amount || 0),
+                        type: isReceive ? 'IN' : 'OUT'
+                    };
+                });
+
+                founderDashboardData.recent_transactions = txList;
+                renderTransactions(txList);
+            }).fail(function () {
+                renderTransactions(founderDashboardData.recent_transactions);
+            });
+        }
+
+        /**
+         * Load Piutang SPP untuk Company terpilih
+         */
+        function loadPiutangSPP(company) {
+            company = company || currentCompany;
+            $('#spp-table-body').html('<tr><td colspan="8" class="text-center py-6 text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat daftar piutang...</td></tr>');
+
+            $.ajax({
+                url: '/api/resource/Fees',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['name', 'student', 'student_name', 'program', 'due_date', 'outstanding_amount', 'grand_total']),
+                    filters: JSON.stringify([
+                        ['company', '=', company],
+                        ['docstatus', '=', 1],
+                        ['outstanding_amount', '>', 0]
+                    ]),
+                    order_by: 'due_date asc',
+                    limit: 50
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).done(function (res) {
+                const fees = (res && res.data) || [];
+                const today = new Date();
+
+                if (fees.length === 0) {
+                    // Fallback to Sales Invoice
+                    $.ajax({
+                        url: '/api/resource/Sales%20Invoice',
+                        type: 'GET',
+                        data: {
+                            fields: JSON.stringify(['name', 'customer', 'customer_name', 'due_date', 'outstanding_amount', 'grand_total']),
+                            filters: JSON.stringify([
+                                ['company', '=', company],
+                                ['docstatus', '=', 1],
+                                ['outstanding_amount', '>', 0]
+                            ]),
+                            limit: 50
+                        },
+                        dataType: 'json',
+                        headers: apiHeaders()
+                    }).done(function (siRes) {
+                        const invoices = (siRes && siRes.data) || [];
+                        if (invoices.length === 0) {
+                            $('#spp-table-body').html(
+                                `<tr><td colspan="8" class="text-center py-8 text-gray-400 text-xs">
+                                    <i class="fa-solid fa-circle-check text-emerald-500 text-xl mb-1 block"></i>
+                                    Tidak ada piutang / tunggakan untuk <strong>${escapeHtml(company)}</strong>.
+                                </td></tr>`
+                            );
+                            founderDashboardData.piutang_spp_list = [];
+                            $('#summary-total-piutang').text('Rp 0');
+                            $('#summary-total-count').text('0 Santri');
+                            $('#summary-aging-30').text('Rp 0');
+                            $('#summary-aging-60').text('Rp 0');
+                            $('#summary-aging-90').text('Rp 0');
+                            return;
+                        }
+
+                        const formattedList = invoices.map(function (inv) {
+                            const due = inv.due_date ? new Date(inv.due_date) : today;
+                            const diffDays = Math.max(0, Math.floor((today - due) / (1000 * 60 * 60 * 24)));
+                            let agingCat = '0-30';
+                            if (diffDays > 60) agingCat = '>60';
+                            else if (diffDays > 30) agingCat = '31-60';
+
+                            return {
+                                nis: inv.name,
+                                student: inv.customer_name || inv.customer,
+                                class: 'Umum',
+                                parent: inv.customer_name || '-',
+                                status: 'MENUNGGAK',
+                                nominal: Number(inv.outstanding_amount || 0),
+                                aging_days: diffDays,
+                                aging_cat: agingCat
+                            };
+                        });
+
+                        founderDashboardData.piutang_spp_list = formattedList;
+                        renderSPPTable(formattedList);
+                    }).fail(function () {
+                        renderSPPTable(founderDashboardData.piutang_spp_list);
+                    });
+                    return;
+                }
+
+                const formattedList = fees.map(function (f) {
+                    const due = f.due_date ? new Date(f.due_date) : today;
+                    const diffDays = Math.max(0, Math.floor((today - due) / (1000 * 60 * 60 * 24)));
+                    let agingCat = '0-30';
+                    if (diffDays > 60) agingCat = '>60';
+                    else if (diffDays > 30) agingCat = '31-60';
+
+                    return {
+                        nis: f.name,
+                        student: f.student_name || f.student,
+                        class: f.program || 'Reguler',
+                        parent: f.student_name ? ('Wali ' + f.student_name) : '-',
+                        status: 'MENUNGGAK',
+                        nominal: Number(f.outstanding_amount || 0),
+                        aging_days: diffDays,
+                        aging_cat: agingCat
+                    };
+                });
+
+                founderDashboardData.piutang_spp_list = formattedList;
+                renderSPPTable(formattedList);
+            }).fail(function () {
+                renderSPPTable(founderDashboardData.piutang_spp_list);
+            });
+        }
+
+        /**
+         * Load Cashflow & Top Pengeluaran sesuai Company
+         */
+        function loadCashflowAndExpenses(company) {
+            company = company || currentCompany;
+            const { from_date, to_date } = getCurrentMonthRange();
+
+            $.ajax({
+                url: '/api/resource/GL%20Entry',
+                type: 'GET',
+                data: {
+                    fields: JSON.stringify(['account', 'sum(debit - credit) as total']),
+                    filters: JSON.stringify([
+                        ['company', '=', company],
+                        ['is_cancelled', '=', 0],
+                        ['posting_date', '>=', from_date],
+                        ['posting_date', '<=', to_date]
+                    ]),
+                    group_by: 'account',
+                    order_by: 'total desc',
+                    limit: 5
+                },
+                dataType: 'json',
+                headers: apiHeaders()
+            }).done(function (res) {
+                const rows = (res && res.data) || [];
+                const validRows = rows.filter(r => Number(r.total) > 0);
+                if (validRows.length > 0) {
+                    const sumTotal = validRows.reduce((sum, r) => sum + Number(r.total), 0);
+                    founderDashboardData.top_5_pengeluaran = validRows.map(r => ({
+                        kategori: r.account.split(' - ')[0],
+                        nominal: Number(r.total),
+                        percent: sumTotal > 0 ? parseFloat(((Number(r.total) / sumTotal) * 100).toFixed(1)) : 0
+                    }));
+                }
+                initCharts();
+            }).fail(function () {
+                initCharts();
+            });
+        }
+
+        /**
+         * Refresh seluruh data dashboard untuk company tertentu
+         */
+        function refreshAllDashboardData(company, onComplete = null) {
+            company = company || currentCompany;
+            let pending = 2;
+            const checkDone = function () {
+                pending--;
+                if (pending <= 0 && typeof onComplete === 'function') {
+                    onComplete();
+                }
+            };
+
+            loadFinancialKPI(company, checkDone);
+            loadBankAccounts(company);
+            loadTransactions(company);
+            loadPiutangSPP(company);
+            loadCashflowAndExpenses(company);
+            loadAcademicKPI(checkDone);
+            loadMarketingKPI();
         }
 
         /**
@@ -1391,30 +1890,25 @@
             // Render initial KPI Overview Metrics (from SSR context or defaults)
             renderKPIs();
 
-            // Fetch live Financial KPI from REST API
-            loadFinancialKPI();
+            // Inisialisasi Dropdown Company dari REST API
+            initCompanyDropdown();
 
-            // Fetch live Academic KPI from Frappe Education REST API
-            loadAcademicKPI();
-
-            // Fetch live Marketing KPI from Frappe CRM & Education REST API
-            loadMarketingKPI();
-            
-            // Render Charts
+            // Render Charts awal
             initCharts();
 
-            // Render Finance & Bank Accounts
+            // Render Finance & Bank Accounts awal
             renderBankAccounts();
             renderTransactions(founderDashboardData.recent_transactions);
 
-            // Render Academic Classes
+            // Render Academic Classes & Marketing Campaigns
             renderAcademicClasses();
-
-            // Render Marketing Campaigns
             renderCampaigns();
 
             // Render SPP Receivables Table
             renderSPPTable(founderDashboardData.piutang_spp_list);
+
+            // Muat seluruh data dashboard untuk company saat ini
+            refreshAllDashboardData(currentCompany);
 
             // Attach Event Handlers
             setupEvents();
@@ -1469,10 +1963,18 @@
             $('#kpi-retention-rate').text(mkt.retention_rate_percent + '%');
         }
 
+        let chartCashflowInstance = null;
+        let chartPengeluaranInstance = null;
+        let chartMuridInstance = null;
+        let chartMarketingInstance = null;
+
         function initCharts() {
             // Chart 1: Cashflow 12 Bulan (Bar Chart)
             const ctxCashflow = document.getElementById('chartCashflow').getContext('2d');
-            new Chart(ctxCashflow, {
+            if (chartCashflowInstance) {
+                chartCashflowInstance.destroy();
+            }
+            chartCashflowInstance = new Chart(ctxCashflow, {
                 type: 'bar',
                 data: {
                     labels: founderDashboardData.cashflow_12_months.labels,
@@ -1510,8 +2012,11 @@
 
             // Chart 2: Top 5 Pengeluaran (Doughnut)
             const ctxPengeluaran = document.getElementById('chartPengeluaran').getContext('2d');
+            if (chartPengeluaranInstance) {
+                chartPengeluaranInstance.destroy();
+            }
             const topExp = founderDashboardData.top_5_pengeluaran;
-            new Chart(ctxPengeluaran, {
+            chartPengeluaranInstance = new Chart(ctxPengeluaran, {
                 type: 'doughnut',
                 data: {
                     labels: topExp.map(item => item.kategori),
@@ -1544,7 +2049,10 @@
 
             // Chart 3: Pertumbuhan Murid (Line Chart)
             const ctxMurid = document.getElementById('chartMurid').getContext('2d');
-            new Chart(ctxMurid, {
+            if (chartMuridInstance) {
+                chartMuridInstance.destroy();
+            }
+            chartMuridInstance = new Chart(ctxMurid, {
                 type: 'line',
                 data: {
                     labels: founderDashboardData.student_growth_6_months.labels,
@@ -1571,7 +2079,10 @@
 
             // Chart 4: Marketing Funnel (Horizontal Bar)
             const ctxMarketing = document.getElementById('chartMarketing').getContext('2d');
-            new Chart(ctxMarketing, {
+            if (chartMarketingInstance) {
+                chartMarketingInstance.destroy();
+            }
+            chartMarketingInstance = new Chart(ctxMarketing, {
                 type: 'bar',
                 data: {
                     labels: founderDashboardData.marketing_funnel.labels,
@@ -1753,16 +2264,10 @@
             $('#btn-refresh').on('click', function () {
                 const btn = $(this);
                 btn.addClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-spinner fa-spin"></i> Loading...');
-                
-                let completed = 0;
-                const finish = function () {
-                    completed++;
-                        btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
-                    }
-                };
 
-                loadFinancialKPI(TARGET_COMPANY, finish);
-                loadAcademicKPI(finish);
+                refreshAllDashboardData(currentCompany, function () {
+                    btn.removeClass('opacity-50 pointer-events-none').html('<i class="fa-solid fa-rotate text-xs"></i> <span class="hidden md:inline">Refresh Data</span>');
+                });
             });
 
             // Filter SPP Receivables Table
