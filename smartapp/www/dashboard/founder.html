@@ -1028,43 +1028,41 @@
 
         /**
          * 5. Unpaid Students Count sesuai Company
+         * Endpoint: GET /api/method/frappe.client.get_count
+         * Menghitung jumlah dokumen Fees dengan outstanding_amount > 0
          */
         function fetchUnpaidStudentsCount(company) {
             return $.ajax({
-                url: '/api/resource/Fees',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    fields: JSON.stringify(['count(distinct student) as unpaid_students_count']),
+                    doctype: 'Fees',
                     filters: JSON.stringify([
                         ['company', '=', company],
                         ['docstatus', '=', 1],
                         ['outstanding_amount', '>', 0]
-                    ]),
-                    limit: 1
+                    ])
                 },
                 dataType: 'json',
                 headers: apiHeaders()
             }).then(function (res) {
-                const data = (res && res.data) || [];
-                return Number((data[0] && data[0].unpaid_students_count) || 0);
+                return Number(res.message || 0);
             }).catch(function () {
                 return $.ajax({
-                    url: '/api/resource/Sales%20Invoice',
+                    url: '/api/method/frappe.client.get_count',
                     type: 'GET',
                     data: {
-                        fields: JSON.stringify(['count(distinct customer) as unpaid_students_count']),
+                        doctype: 'Sales Invoice',
                         filters: JSON.stringify([
                             ['company', '=', company],
                             ['docstatus', '=', 1],
                             ['outstanding_amount', '>', 0]
-                        ]),
-                        limit: 1
+                        ])
                     },
                     dataType: 'json',
                     headers: apiHeaders()
-                }).then(function (r) {
-                    const d = (r && r.data) || [];
-                    return Number((d[0] && d[0].unpaid_students_count) || 0);
+                }).then(function (res) {
+                    return Number(res.message || 0);
                 }).catch(function () { return 0; });
             });
         }
@@ -1463,177 +1461,174 @@
 
         /**
          * Fetch active students count from Frappe Education REST API
-         * Endpoint: GET /api/resource/Student
-         * Filter: filters=[["status", "=", "Active"]] & fields=["count(name) as total_active_students"]
+         * Endpoint: GET /api/method/frappe.client.get_count
+         * Filter: [["status", "=", "Active"]]
          */
         function fetchActiveStudents() {
             return $.ajax({
-                url: '/api/resource/Student',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    filters: JSON.stringify([["status", "=", "Active"]]),
-                    fields: JSON.stringify(["count(name) as total_active_students"])
+                    doctype: 'Student',
+                    filters: JSON.stringify([['status', '=', 'Active']])
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
             }).catch(function () {
                 // Fallback jika Student menggunakan field enabled (enabled=1)
                 return $.ajax({
-                    url: '/api/resource/Student',
+                    url: '/api/method/frappe.client.get_count',
                     type: 'GET',
                     data: {
-                        filters: JSON.stringify([["enabled", "=", 1]]),
-                        fields: JSON.stringify(["count(name) as total_active_students"])
+                        doctype: 'Student',
+                        filters: JSON.stringify([['enabled', '=', 1]])
                     },
                     dataType: 'json',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                    }
-                });
+                    headers: apiHeaders()
+                }).then(function (res) {
+                    return Number(res.message || 0);
+                }).catch(function () { return 0; });
             });
         }
 
         /**
          * Fetch total active instructors/teachers from Frappe Education REST API
-         * Endpoint: GET /api/resource/Instructor
-         * Filter: filters=[["status", "=", "Active"]] & fields=["count(name) as total_instructors"]
+         * Endpoint: GET /api/method/frappe.client.get_count
+         * Filter: [["status", "=", "Active"]]
          */
         function fetchInstructors() {
             return $.ajax({
-                url: '/api/resource/Instructor',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    filters: JSON.stringify([["status", "=", "Active"]]),
-                    fields: JSON.stringify(["count(name) as total_instructors"])
+                    doctype: 'Instructor',
+                    filters: JSON.stringify([['status', '=', 'Active']])
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
             }).catch(function () {
                 // Fallback: ambil semua Instructor tanpa filter status
                 return $.ajax({
-                    url: '/api/resource/Instructor',
+                    url: '/api/method/frappe.client.get_count',
                     type: 'GET',
                     data: {
-                        fields: JSON.stringify(["count(name) as total_instructors"])
+                        doctype: 'Instructor'
                     },
                     dataType: 'json',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                    }
-                });
+                    headers: apiHeaders()
+                }).then(function (res) {
+                    return Number(res.message || 0);
+                }).catch(function () { return 0; });
             });
         }
 
         /**
          * Fetch active student groups (classes) from Frappe Education REST API
-         * Endpoint: GET /api/resource/Student Group
-         * Filter: filters=[["disabled", "=", 0]] & fields=["count(name) as total_active_groups"]
+         * Endpoint: GET /api/method/frappe.client.get_count
+         * Filter: [["disabled", "=", 0]]
          */
         function fetchActiveStudentGroups() {
             return $.ajax({
-                url: '/api/resource/Student%20Group',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    filters: JSON.stringify([["disabled", "=", 0]]),
-                    fields: JSON.stringify(["count(name) as total_active_groups"])
+                    doctype: 'Student Group',
+                    filters: JSON.stringify([['disabled', '=', 0]])
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
             }).catch(function () {
                 // Fallback: ambil semua Student Group tanpa filter disabled
                 return $.ajax({
-                    url: '/api/resource/Student%20Group',
+                    url: '/api/method/frappe.client.get_count',
                     type: 'GET',
                     data: {
-                        fields: JSON.stringify(["count(name) as total_active_groups"])
+                        doctype: 'Student Group'
                     },
                     dataType: 'json',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                    }
-                });
+                    headers: apiHeaders()
+                }).then(function (res) {
+                    return Number(res.message || 0);
+                }).catch(function () { return 0; });
             });
         }
 
         /**
          * Fetch total Lead CRM dari Frappe CRM REST API
-         * Endpoint: GET /api/resource/Lead
+         * Endpoint: GET /api/method/frappe.client.get_count
          * Menghitung jumlah seluruh record Lead (count)
          */
         function fetchTotalLeads() {
             return $.ajax({
-                url: '/api/resource/Lead',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    fields: JSON.stringify(['count(name) as total_leads']),
-                    limit: 1
+                    doctype: 'Lead'
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
+            }).catch(function (xhr) {
+                console.error('Gagal mengambil data Lead:', xhr);
+                return 0;
             });
         }
 
         /**
          * Fetch total pendaftar PPDB dari Frappe Education REST API
-         * Endpoint: GET /api/resource/Student Applicant
+         * Endpoint: GET /api/method/frappe.client.get_count
          * Menghitung jumlah seluruh record Student Applicant
          */
         function fetchTotalApplicants() {
             return $.ajax({
-                url: '/api/resource/Student%20Applicant',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    fields: JSON.stringify(['count(name) as total_applicants']),
-                    limit: 1
+                    doctype: 'Student Applicant'
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
+            }).catch(function (xhr) {
+                console.error('Gagal mengambil data Student Applicant:', xhr);
+                return 0;
             });
         }
 
         /**
          * Fetch Lead dengan status "Converted" untuk perhitungan conversion rate
-         * Endpoint: GET /api/resource/Lead?filters=[["status","=","Converted"]]
+         * Endpoint: GET /api/method/frappe.client.get_count
          * Conversion Rate = (Lead Converted / Total Lead) * 100
          */
         function fetchConvertedLeads() {
             return $.ajax({
-                url: '/api/resource/Lead',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    filters: JSON.stringify([['status', '=', 'Converted']]),
-                    fields: JSON.stringify(['count(name) as converted_leads']),
-                    limit: 1
+                    doctype: 'Lead',
+                    filters: JSON.stringify([['status', '=', 'Converted']])
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
+            }).catch(function (xhr) {
+                console.error('Gagal mengambil Lead Converted:', xhr);
+                return 0;
             });
         }
 
         /**
          * Fetch data Student Group Student untuk perhitungan retention rate
-         * Endpoint: GET /api/resource/Student Group Student
+         * Endpoint: GET /api/method/frappe.client.get_count
          *
          * Strategi retention rate:
          *   Retention Rate = (Jumlah Student Group Student aktif saat ini /
@@ -1642,17 +1637,18 @@
          */
         function fetchStudentGroupStudents() {
             return $.ajax({
-                url: '/api/resource/Student%20Group%20Student',
+                url: '/api/method/frappe.client.get_count',
                 type: 'GET',
                 data: {
-                    fields: JSON.stringify(['count(name) as total_group_students']),
-                    limit: 1
+                    doctype: 'Student Group Student'
                 },
                 dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Frappe-CSRF-Token': getCookie('csrf_token') || (window.frappe ? frappe.csrf_token : '')
-                }
+                headers: apiHeaders()
+            }).then(function (res) {
+                return Number(res.message || 0);
+            }).catch(function (xhr) {
+                console.error('Gagal mengambil data Student Group Student:', xhr);
+                return 0;
             });
         }
 
@@ -1670,9 +1666,9 @@
         }
 
         /**
-         * Asynchronously load Marketing KPI dari Frappe REST API standar:
-         *   1. Total Lead CRM  → GET /api/resource/Lead (count all)
-         *   2. Pendaftar PPDB  → GET /api/resource/Student Applicant (count all)
+         * Asynchronously load Marketing KPI menggunakan frappe.client.get_count:
+         *   1. Total Lead CRM  → frappe.client.get_count(Lead)
+         *   2. Pendaftar PPDB  → frappe.client.get_count(Student Applicant)
          *   3. Conversion Rate → (Lead status=Converted / Total Lead) * 100  [dihitung di JS]
          *   4. Retention Rate  → (Student Group Student / Student aktif) * 100 [dihitung di JS]
          */
@@ -1713,71 +1709,42 @@
                 if (typeof onComplete === 'function') onComplete();
             };
 
-            // A. Total Lead CRM — GET /api/resource/Lead
+            // A. Total Lead CRM — frappe.client.get_count(Lead)
             fetchTotalLeads()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        totalLeads = Number(first.total_leads !== undefined ? first.total_leads : (first.count || data.length)) || 0;
-                    } else {
-                        totalLeads = 0;
-                    }
+                .then(function (count) {
+                    totalLeads = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Lead dari REST API Frappe CRM:', error);
+                .catch(function () {
                     totalLeads = 0;
                 })
                 .always(checkDone);
 
-            // B. Pendaftar PPDB — GET /api/resource/Student Applicant
+            // B. Pendaftar PPDB — frappe.client.get_count(Student Applicant)
             fetchTotalApplicants()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        founderDashboardData.marketing_kpi.pendaftar_ppdb =
-                            Number(first.total_applicants !== undefined ? first.total_applicants : (first.count || data.length)) || 0;
-                    } else {
-                        founderDashboardData.marketing_kpi.pendaftar_ppdb = 0;
-                    }
+                .then(function (count) {
+                    founderDashboardData.marketing_kpi.pendaftar_ppdb = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Student Applicant dari REST API Frappe Education:', error);
+                .catch(function () {
                     founderDashboardData.marketing_kpi.pendaftar_ppdb = 0;
                 })
                 .always(checkDone);
 
             // C. Lead Converted — untuk conversion rate
             fetchConvertedLeads()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        convertedLeads = Number(first.converted_leads !== undefined ? first.converted_leads : (first.count || data.length)) || 0;
-                    } else {
-                        convertedLeads = 0;
-                    }
+                .then(function (count) {
+                    convertedLeads = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil Lead Converted dari REST API Frappe CRM:', error);
+                .catch(function () {
                     convertedLeads = 0;
                 })
                 .always(checkDone);
 
             // D. Student Group Student — untuk retention rate
             fetchStudentGroupStudents()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        totalGroupStudents = Number(first.total_group_students !== undefined ? first.total_group_students : (first.count || data.length)) || 0;
-                    } else {
-                        totalGroupStudents = 0;
-                    }
+                .then(function (count) {
+                    totalGroupStudents = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Student Group Student dari REST API Frappe Education:', error);
+                .catch(function () {
                     totalGroupStudents = 0;
                 })
                 .always(checkDone);
@@ -1796,7 +1763,7 @@
         }
 
         /**
-         * Asynchronously load and update Academic KPI from Frappe Education REST API
+         * Asynchronously load and update Academic KPI menggunakan frappe.client.get_count
          */
         function loadAcademicKPI(onComplete = null) {
             // Tampilkan spinner loading pada kartu KPI Akademik
@@ -1813,71 +1780,32 @@
                 }
             };
 
-            // A. Jumlah Murid Aktif — GET /api/resource/Student
+            // A. Jumlah Murid Aktif — frappe.client.get_count(Student)
             fetchActiveStudents()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        if (first.total_active_students !== undefined) {
-                            founderDashboardData.academic_kpi.murid_aktif = Number(first.total_active_students) || 0;
-                        } else if (first.count !== undefined) {
-                            founderDashboardData.academic_kpi.murid_aktif = Number(first.count) || 0;
-                        } else {
-                            founderDashboardData.academic_kpi.murid_aktif = data.length;
-                        }
-                    } else {
-                        founderDashboardData.academic_kpi.murid_aktif = 0;
-                    }
+                .then(function (count) {
+                    founderDashboardData.academic_kpi.murid_aktif = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Student dari REST API Frappe Education:', error);
+                .catch(function () {
                     founderDashboardData.academic_kpi.murid_aktif = 0;
                 })
                 .always(checkDone);
 
-            // B. Total Guru — GET /api/resource/Instructor
+            // B. Total Guru — frappe.client.get_count(Instructor)
             fetchInstructors()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        if (first.total_instructors !== undefined) {
-                            founderDashboardData.academic_kpi.total_guru = Number(first.total_instructors) || 0;
-                        } else if (first.count !== undefined) {
-                            founderDashboardData.academic_kpi.total_guru = Number(first.count) || 0;
-                        } else {
-                            founderDashboardData.academic_kpi.total_guru = data.length;
-                        }
-                    } else {
-                        founderDashboardData.academic_kpi.total_guru = 0;
-                    }
+                .then(function (count) {
+                    founderDashboardData.academic_kpi.total_guru = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Instructor dari REST API Frappe Education:', error);
+                .catch(function () {
                     founderDashboardData.academic_kpi.total_guru = 0;
                 })
                 .always(checkDone);
 
-            // C. Kelas Aktif — GET /api/resource/Student Group
+            // C. Kelas Aktif — frappe.client.get_count(Student Group)
             fetchActiveStudentGroups()
-                .done(function (res) {
-                    const data = (res && res.data) || [];
-                    if (data.length > 0) {
-                        const first = data[0];
-                        if (first.total_active_groups !== undefined) {
-                            founderDashboardData.academic_kpi.kelas_aktif = Number(first.total_active_groups) || 0;
-                        } else if (first.count !== undefined) {
-                            founderDashboardData.academic_kpi.kelas_aktif = Number(first.count) || 0;
-                        } else {
-                            founderDashboardData.academic_kpi.kelas_aktif = data.length;
-                        }
-                    } else {
-                        founderDashboardData.academic_kpi.kelas_aktif = 0;
-                    }
+                .then(function (count) {
+                    founderDashboardData.academic_kpi.kelas_aktif = count;
                 })
-                .fail(function (xhr, status, error) {
-                    console.error('Gagal mengambil data Student Group dari REST API Frappe Education:', error);
+                .catch(function () {
                     founderDashboardData.academic_kpi.kelas_aktif = 0;
                 })
                 .always(checkDone);
