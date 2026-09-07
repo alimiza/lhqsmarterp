@@ -1470,7 +1470,7 @@
                 type: 'GET',
                 data: {
                     doctype: 'Student',
-                    filters: JSON.stringify([['status', '=', 'Active']])
+                    filters: JSON.stringify({ "status" : "Active" })
                 },
                 dataType: 'json',
                 headers: apiHeaders()
@@ -1483,7 +1483,7 @@
                     type: 'GET',
                     data: {
                         doctype: 'Student',
-                        filters: JSON.stringify([['enabled', '=', 1]])
+                        filters: JSON.stringify({ "enabled" : 1 })
                     },
                     dataType: 'json',
                     headers: apiHeaders()
@@ -1504,7 +1504,7 @@
                 type: 'GET',
                 data: {
                     doctype: 'Instructor',
-                    filters: JSON.stringify([['status', '=', 'Active']])
+                    filters: JSON.stringify({ "status" : "Active" })
                 },
                 dataType: 'json',
                 headers: apiHeaders()
@@ -1537,7 +1537,7 @@
                 type: 'GET',
                 data: {
                     doctype: 'Student Group',
-                    filters: JSON.stringify([['disabled', '=', 0]])
+                    filters: JSON.stringify({ "disabled" : 0 })
                 },
                 dataType: 'json',
                 headers: apiHeaders()
@@ -1614,7 +1614,7 @@
                 type: 'GET',
                 data: {
                     doctype: 'Lead',
-                    filters: JSON.stringify([['status', '=', 'Converted']])
+                    filters: JSON.stringify({ "status": "Converted" })
                 },
                 dataType: 'json',
                 headers: apiHeaders()
