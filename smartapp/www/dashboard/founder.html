@@ -835,16 +835,74 @@
         }
 
         /**
-         * 1. Saldo Kas & Bank (sesuai Company)
-         * GET /api/resource/Account?fields=[...]&filters=[["company","=",company],["account_type","in",["Cash","Bank"]],["is_group","=",0]]
-         * GET /api/method/erpnext.accounts.utils.get_balance_on?account=<name>&date=<today>&company=<company>
+         * Helper: Hitung saldo satu akun dari GL Entry (whitelist Frappe bawaan).
+         * Saldo = SUM(debit) - SUM(credit) untuk akun ber-tipe normal Debit (Cash/Bank/Asset).
+         * Menggunakan /api/resource/GL Entry yang tersedia tanpa whitelist khusus.
+         *
+         * @param {string} accountName  - name akun (primary key di Account)
+         * @param {string} company      - nama company
+         * @param {string} asOfDate     - tanggal batas (YYYY-MM-DD), inklusif
+         * @returns {Promise<number>}   - saldo bersih (debit - credit)
          */
-        function fetchSaldoKasBank(company, today) {
+        function fetchAccountBalanceFromGL(accountName, company, asOfDate) {
+            // Ambil semua posting GL Entry s.d. asOfDate untuk akun ini.
+            // Frappe membatasi limit_page_length; kita pakai 500 (maksimum default).
+            // Untuk akun dengan transaksi sangat banyak, cukup ambil saldo total per sisi
+            // menggunakan agregasi sederhana di sisi JS setelah paginate.
+            function fetchPage(start) {
+                return $.ajax({
+                    url: '/api/resource/GL%20Entry',
+                    type: 'GET',
+                    data: {
+                        fields: JSON.stringify(['debit', 'credit']),
+                        filters: JSON.stringify([
+                            ['account', '=', accountName],
+                            ['company', '=', company],
+                            ['posting_date', '<=', asOfDate],
+                            ['is_cancelled', '=', 0]
+                        ]),
+                        limit_page_length: 500,
+                        limit_start: start || 0
+                    },
+                    dataType: 'json',
+                    headers: apiHeaders()
+                });
+            }
+
+            function sumPages(start, totalDebit, totalCredit) {
+                return fetchPage(start).then(function (res) {
+                    const rows = (res && res.data) || [];
+                    rows.forEach(function (r) {
+                        totalDebit  += Number(r.debit  || 0);
+                        totalCredit += Number(r.credit || 0);
+                    });
+                    // Jika hasil = 500, mungkin masih ada halaman berikutnya
+                    if (rows.length === 500) {
+                        return sumPages(start + 500, totalDebit, totalCredit);
+                    }
+                    return totalDebit - totalCredit;
+                }).catch(function () {
+                    return totalDebit - totalCredit;
+                });
+            }
+
+            return sumPages(0, 0, 0);
+        }
+
+        /**
+         * Helper: Ambil daftar akun Kas & Bank suatu company, lalu hitung saldo
+         * masing-masing via GL Entry. Mengembalikan array objek akun + saldo.
+         *
+         * @param {string} company
+         * @param {string} asOfDate   - YYYY-MM-DD
+         * @returns {Promise<Array<{name, account_name, account_type, account_number, balance}>>}
+         */
+        function fetchAllAccountsBalance(company, asOfDate) {
             return $.ajax({
                 url: '/api/resource/Account',
                 type: 'GET',
                 data: {
-                    fields: JSON.stringify(['name', 'account_name', 'account_type']),
+                    fields: JSON.stringify(['name', 'account_name', 'account_type', 'account_number']),
                     filters: JSON.stringify([
                         ['company', '=', company],
                         ['account_type', 'in', ['Cash', 'Bank']],
@@ -856,24 +914,36 @@
                 headers: apiHeaders()
             }).then(function (res) {
                 const accounts = (res && res.data) || [];
-                if (accounts.length === 0) return 0;
+                if (accounts.length === 0) return [];
 
-                const balanceRequests = accounts.map(function (acc) {
-                    return $.ajax({
-                        url: '/api/method/erpnext.accounts.utils.get_balance_on',
-                        type: 'GET',
-                        data: { account: acc.name, date: today, company: company },
-                        dataType: 'json',
-                        headers: apiHeaders()
-                    }).then(function (r) {
-                        return Number((r && r.message) || 0);
-                    }).catch(function () { return 0; });
+                const balancePromises = accounts.map(function (acc) {
+                    return fetchAccountBalanceFromGL(acc.name, company, asOfDate).then(function (balance) {
+                        return {
+                            name: acc.account_name || acc.name,
+                            account_no: acc.account_number || acc.name,
+                            balance: balance,
+                            type: acc.account_type === 'Cash' ? 'Kas Tunai' : 'Bank Utama',
+                            _raw: acc
+                        };
+                    });
                 });
 
-                return $.when.apply($, balanceRequests).then(function () {
-                    const balances = Array.prototype.slice.call(arguments);
-                    return balances.reduce(function (sum, val) { return sum + val; }, 0);
+                return $.when.apply($, balancePromises).then(function () {
+                    return Array.prototype.slice.call(arguments);
                 });
+            }).catch(function () { return []; });
+        }
+
+        /**
+         * 1. Saldo Kas & Bank (sesuai Company)
+         * Mengambil daftar akun Kas/Bank via /api/resource/Account, kemudian
+         * menghitung saldo masing-masing langsung dari GL Entry (debit - credit)
+         * via /api/resource/GL Entry — tanpa memanggil erpnext.accounts.utils.get_balance_on.
+         */
+        function fetchSaldoKasBank(company, today) {
+            return fetchAllAccountsBalance(company, today).then(function (accountList) {
+                if (!accountList || accountList.length === 0) return 0;
+                return accountList.reduce(function (sum, acc) { return sum + (acc.balance || 0); }, 0);
             }).catch(function () { return 0; });
         }
 
@@ -1161,11 +1231,13 @@
         }
 
         /**
-         * Load Rekening & Kas Lembaga untuk Company terpilih
+         * Load Rekening & Kas Lembaga untuk Company terpilih.
+         * Saldo masing-masing akun dihitung langsung dari GL Entry (debit - credit)
+         * via /api/resource/GL Entry — tanpa memanggil erpnext.accounts.utils.get_balance_on.
          */
         function loadBankAccounts(company) {
             company = company || currentCompany;
-            $('#bank-accounts-container').html('<div class="col-span-1 sm:col-span-3 text-center py-6 text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekening kas & bank...</div>');
+            $('#bank-accounts-container').html('<div class="col-span-1 sm:col-span-3 text-center py-6 text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat rekening kas &amp; bank...</div>');
             const { today } = getCurrentMonthRange();
 
             $.ajax({
@@ -1195,18 +1267,13 @@
                     return;
                 }
 
+                // Hitung saldo masing-masing akun dari GL Entry (debit - credit)
                 const balancePromises = accounts.map(function (acc) {
-                    return $.ajax({
-                        url: '/api/method/erpnext.accounts.utils.get_balance_on',
-                        type: 'GET',
-                        data: { account: acc.name, date: today, company: company },
-                        dataType: 'json',
-                        headers: apiHeaders()
-                    }).then(function (r) {
+                    return fetchAccountBalanceFromGL(acc.name, company, today).then(function (balance) {
                         return {
                             name: acc.account_name || acc.name,
                             account_no: acc.account_number || acc.name,
-                            balance: Number((r && r.message) || 0),
+                            balance: balance,
                             type: acc.account_type === 'Cash' ? 'Kas Tunai' : 'Bank Utama'
                         };
                     }).catch(function () {
