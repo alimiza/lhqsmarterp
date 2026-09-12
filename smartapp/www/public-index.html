@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Hafiz Quran - Program Tahfidz & Character Building Anak</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans & Amiri (Arabic) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        arabic: ['"Amiri"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                        gold: {
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    backgroundImage: {
+                        'hero-pattern': "radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.15) 0%, rgba(46, 16, 101, 0.8) 100%)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Pattern Backgrounds & Glassmorphism */
+        .islamic-pattern {
+            background-color: #2e1065;
+            background-image: radial-gradient(#6d28d9 0.75px, transparent 0.75px), radial-gradient(#6d28d9 0.75px, #2e1065 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            background-opacity: 0.2;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(237, 233, 254, 0.6);
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 50%, #D97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-gradient-bg {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .purple-gradient-bg {
+            background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+        }
+
+        /* Pulse glow animation */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.7); }
+        }
+        .pulse-gold {
+            animation: pulse-glow 3s infinite;
+        }
+    </style>
+</head>
+<body class="font-sans bg-slate-50 text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-brand-950 text-brand-200 text-xs sm:text-sm py-2 px-4 text-center border-b border-brand-800 flex justify-between items-center px-4 md:px-12">
+        <div class="hidden sm:flex items-center space-x-4 text-xs">
+            <span><i class="fa-solid fa-phone text-gold-400 mr-1.5"></i> +62 812-3456-7890</span>
+            <span><i class="fa-solid fa-envelope text-gold-400 mr-1.5"></i> salam@littlehafizquran.com</span>
+        </div>
+        <div class="w-full sm:w-auto text-center font-medium">
+            <span class="bg-gold-500/20 text-gold-300 text-xs px-2.5 py-0.5 rounded-full border border-gold-500/30 mr-2">Pendaftaran Baru</span>
+            Diskon Biaya Registrasi Tahun Ajaran Baru Hingga 25%!
+        </div>
+        <div class="hidden sm:flex items-center space-x-3 text-xs">
+            <a href="#" class="hover:text-gold-400 transition"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="hover:text-gold-400 transition"><i class="fa-brands fa-youtube"></i></a>
+            <a href="#" class="hover:text-gold-400 transition"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header id="navbar" class="sticky top-0 z-50 transition-all duration-300 bg-brand-900/95 backdrop-blur-md border-b border-brand-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <a href="#beranda" class="flex items-center space-x-3 group">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-gold-500 to-amber-300 p-0.5 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                        <div class="w-full h-full bg-brand-950 rounded-[14px] flex items-center justify-center">
+                            <i class="fa-solid fa-kaaba text-gold-400 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-extrabold tracking-tight text-white flex items-center">
+                            Little Hafiz <span class="text-gold-400 ml-1">Quran</span>
+                        </span>
+                        <span class="text-[10px] tracking-wider text-brand-200 uppercase font-semibold">Fun & Interactive Tahfidz</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                    <a href="#beranda" class="nav-link text-white font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">Beranda</a>
+                    <a href="#tentang" class="nav-link text-brand-100 font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">Tentang</a>
+                    <a href="#program" class="nav-link text-brand-100 font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">Program</a>
+                    <a href="#kalkulator" class="nav-link text-brand-100 font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">Simulasi Hafalan</a>
+                    <a href="#kegiatan" class="nav-link text-brand-100 font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">Kegiatan</a>
+                    <a href="#testimoni" class="nav-link text-brand-100 font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">Testimoni</a>
+                    <a href="#faq" class="nav-link text-brand-100 font-medium hover:text-gold-400 px-3 py-2 rounded-lg text-sm transition hover:bg-white/5">FAQ</a>
+                </nav>
+
+                <!-- Actions CTA -->
+                <div class="hidden md:flex items-center space-x-3">
+                    <a href="https://wa.me/6281234567890?text=Halo%20Little%20Hafiz%20Quran,%20saya%20ingin%20tanya%20Trial%20Class%20Gratis" target="_blank" class="text-xs bg-brand-800/80 hover:bg-brand-700 text-gold-300 px-4 py-2.5 rounded-xl border border-brand-600 transition flex items-center space-x-2 shadow">
+                        <i class="fa-solid fa-calendar-check text-gold-400"></i>
+                        <span>Trial Class Gratis</span>
+                    </a>
+                    <a href="#pendaftaran" class="gold-gradient-bg text-brand-950 font-bold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-gold-500/20 hover:scale-105 transition duration-300 text-sm flex items-center space-x-2">
+                        <span>Daftar Sekarang</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Toggle Button -->
+                <div class="md:hidden flex items-center space-x-2">
+                    <button id="mobile-menu-btn" class="text-brand-100 hover:text-white focus:outline-none p-2 rounded-lg hover:bg-brand-800">
+                        <i class="fa-solid fa-bars text-2xl" id="menu-icon"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-brand-950 border-b border-brand-800 px-4 pt-2 pb-6 space-y-2">
+            <a href="#beranda" class="mobile-nav-link block text-white font-medium px-3 py-2 rounded-lg text-base">Beranda</a>
+            <a href="#tentang" class="mobile-nav-link block text-brand-200 font-medium px-3 py-2 rounded-lg text-base">Tentang Kami</a>
+            <a href="#program" class="mobile-nav-link block text-brand-200 font-medium px-3 py-2 rounded-lg text-base">Program Kelas</a>
+            <a href="#kalkulator" class="mobile-nav-link block text-brand-200 font-medium px-3 py-2 rounded-lg text-base">Simulasi Target Hafalan</a>
+            <a href="#kegiatan" class="mobile-nav-link block text-brand-200 font-medium px-3 py-2 rounded-lg text-base">Galeri Kegiatan</a>
+            <a href="#testimoni" class="mobile-nav-link block text-brand-200 font-medium px-3 py-2 rounded-lg text-base">Testimoni Orang Tua</a>
+            <a href="#faq" class="mobile-nav-link block text-brand-200 font-medium px-3 py-2 rounded-lg text-base">FAQ</a>
+            <div class="pt-4 border-t border-brand-800 flex flex-col space-y-3">
+                <a href="#pendaftaran" class="mobile-nav-link text-center gold-gradient-bg text-brand-950 font-bold px-4 py-3 rounded-xl shadow text-base">
+                    Daftar Sekarang
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="beranda" class="relative bg-brand-950 text-white overflow-hidden py-16 md:py-24 islamic-pattern">
+        <!-- Glow Overlay Accents -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-600/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Hero Left Column Text -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center space-x-2 bg-brand-800/80 border border-brand-600/50 px-4 py-2 rounded-full text-gold-300 text-xs sm:text-sm font-medium shadow-inner">
+                        <i class="fa-solid fa-star text-gold-400 text-xs"></i>
+                        <span>Program Tahfidz Anak Interaktif #1</span>
+                        <span class="bg-gold-500 text-brand-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Usia 4-12 Thn</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-white">
+                        Menumbuhkan <span class="gold-gradient-text">Cinta Al-Qur'an</span> & Akhlak Mulia Sejak Dini
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-brand-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                        Little Hafiz Quran menghadirkan metode tahfidz yang menyenangkan, bimbingan shalat, doa harian, dan pembinaan karakter islami agar anak menghafal dengan bahagia tanpa beban.
+                    </p>
+
+                    <!-- Hero Call to Action Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                        <a href="#pendaftaran" class="w-full sm:w-auto text-center gold-gradient-bg text-brand-950 font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-gold-500/30 hover:scale-105 transition duration-300 flex items-center justify-center space-x-3 text-base">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Daftar Sekarang</span>
+                        </a>
+                        <a href="https://wa.me/6281234567890?text=Halo%20Little%20Hafiz%20Quran,%20saya%20ingin%20konsultasi%20program%20tahfidz" target="_blank" class="w-full sm:w-auto text-center bg-white/10 hover:bg-white/20 text-white font-semibold px-7 py-4 rounded-xl border border-white/20 transition duration-300 flex items-center justify-center space-x-3 text-base">
+                            <i class="fa-brands fa-whatsapp text-emerald-400 text-xl"></i>
+                            <span>Konsultasi WhatsApp</span>
+                        </a>
+                    </div>
+
+                    <!-- Trust Stats Bar -->
+                    <div class="pt-8 border-t border-brand-800/80 grid grid-cols-3 gap-4 text-center lg:text-left">
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-gold-400 counter-value" data-target="500">0</div>
+                            <div class="text-xs text-brand-300 mt-1">Santri Aktif</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-white counter-value" data-target="98">0</div>
+                            <div class="text-xs text-brand-300 mt-1">% OrangTua Puas</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-gold-400 counter-value" data-target="15">0</div>
+                            <div class="text-xs text-brand-300 mt-1">Pengajar Hafiz/ah</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Right Column Highlight Visual Card -->
+                <div class="lg:col-span-5">
+                    <div class="relative max-w-md mx-auto">
+                        <!-- Card Border Glow -->
+                        <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-gold-400 to-brand-500 blur opacity-40 transition duration-1000 group-hover:opacity-100"></div>
+                        
+                        <div class="relative bg-brand-900/90 border border-brand-700/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md">
+                            <!-- Image Header -->
+                            <div class="relative h-56 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1609599006353-e629aaabfeae?auto=format&fit=crop&w=700&q=80" alt="Belajar Al-Qur'an Interaktif" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/40 to-transparent"></div>
+                                <div class="absolute top-4 right-4 bg-brand-950/80 backdrop-blur-sm text-gold-300 text-xs font-semibold px-3 py-1.5 rounded-full border border-gold-500/30">
+                                    <i class="fa-solid fa-sparkles text-gold-400 mr-1"></i> Metode 3T
+                                </div>
+                            </div>
+
+                            <!-- Content Info -->
+                            <div class="p-6 space-y-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400 shrink-0">
+                                        <i class="fa-solid fa-book-quran text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-white font-bold text-base">Kurikulum Tahfidz Tematik</h3>
+                                        <p class="text-xs text-brand-300">Menghafal Surah Pendek & Tajwid Ringkas</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2 pt-2 border-t border-brand-800">
+                                    <div class="flex items-center text-xs text-brand-100">
+                                        <i class="fa-solid fa-check-circle text-gold-400 mr-2"></i>
+                                        <span>Bimbingan bacaan tartil & makhraj huruf presisi</span>
+                                    </div>
+                                    <div class="flex items-center text-xs text-brand-100">
+                                        <i class="fa-solid fa-check-circle text-gold-400 mr-2"></i>
+                                        <span>Latihan shalat & hafalan doa harian bergambar</span>
+                                    </div>
+                                    <div class="flex items-center text-xs text-brand-100">
+                                        <i class="fa-solid fa-check-circle text-gold-400 mr-2"></i>
+                                        <span>Laporan perkembangan hafalan berkala via WhatsApp</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-brand-950/80 p-3 rounded-xl border border-brand-800 flex items-center justify-between text-xs">
+                                    <span class="text-brand-300"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1.5"></i> Pengajar Tersertifikasi</span>
+                                    <span class="font-bold text-gold-400">Wisuda & Sertifikat</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES HIGHLIGHT -->
+    <section class="py-12 bg-white border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                
+                <div class="flex items-start space-x-4 p-4 rounded-2xl bg-brand-50/60 border border-brand-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                        <i class="fa-solid fa-heart-pulse text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base">Metode Fun Tahfidz</h4>
+                        <p class="text-xs text-slate-600 mt-1">Anak menghafal dengan lagu, visual interaktif, dan tanpa paksaan.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4 p-4 rounded-2xl bg-brand-50/60 border border-brand-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-xl bg-gold-500 text-brand-950 flex items-center justify-center shrink-0 shadow-md">
+                        <i class="fa-solid fa-hands-praying text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base">Bimbingan Shalat & Doa</h4>
+                        <p class="text-xs text-slate-600 mt-1">Praktik shalat sesuai sunnah & hafalan doa harian sehari-hari.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4 p-4 rounded-2xl bg-brand-50/60 border border-brand-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base">Pengajar Berkompeten</h4>
+                        <p class="text-xs text-slate-600 mt-1">Ustadz & Ustadzah tersertifikasi hafiz Al-Qur'an dan penyayang anak.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4 p-4 rounded-2xl bg-brand-50/60 border border-brand-100 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-xl bg-gold-500 text-brand-950 flex items-center justify-center shrink-0 shadow-md">
+                        <i class="fa-solid fa-chart-line text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base">Laporan Berkala</h4>
+                        <p class="text-xs text-slate-600 mt-1">Orang tua mendapatkan perkembangan hafalan anak secara real-time.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- TENTANG KAMI SECTION -->
+    <section id="tentang" class="py-20 bg-slate-50 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Visual Showcase -->
+                <div class="lg:col-span-5 relative">
+                    <div class="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                        <img src="https://images.unsplash.com/photo-1609599006353-e629aaabfeae?auto=format&fit=crop&w=800&q=80" alt="Anak Belajar Al-Quran" class="w-full h-96 object-cover hover:scale-105 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-brand-950/80 via-transparent to-transparent flex items-end p-6">
+                            <div class="text-white">
+                                <p class="text-xs uppercase tracking-widest text-gold-400 font-bold">Visi Pendidikan Kami</p>
+                                <p class="text-lg font-bold">Mencetak Generasi Qur'ani Berakhlak Karimah</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-xl border border-brand-100 z-20 flex items-center space-x-3 hidden sm:flex">
+                        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                            <i class="fa-solid fa-shield-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">Kurikulum Standar</p>
+                            <p class="text-sm font-bold text-slate-900">Kemenag & Metode Talqin</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Content Description -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-block bg-brand-100 text-brand-800 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                        Tentang Little Hafiz Quran
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                        Pendidikan Tahfidz Modern yang Ramah & Menyenangkan Bagi Buah Hati
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-base">
+                        Little Hafiz Quran adalah lembaga pendidikan tahfidz anak yang berfokus pada pembentukan karakter islami sejak dini. Kami percaya bahwa setiap anak memiliki potensi istimewa untuk mencintai Al-Qur'an jika dibimbing dengan kasih sayang, kesabaran, dan metode pembelajaran yang tepat.
+                    </p>
+
+                    <!-- Visi Misi Tab Controller -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex border-b border-slate-200 space-x-4 mb-4">
+                            <button class="about-tab font-bold text-sm pb-2 border-b-2 border-brand-600 text-brand-700" data-target="misi">Misi Utama</button>
+                            <button class="about-tab font-bold text-sm pb-2 border-b-2 border-transparent text-slate-500 hover:text-brand-600" data-target="visi">Visi Kami</button>
+                            <button class="about-tab font-bold text-sm pb-2 border-b-2 border-transparent text-slate-500 hover:text-brand-600" data-target="metode">Metode 3T</button>
+                        </div>
+
+                        <div id="tab-misi" class="tab-content text-sm text-slate-600 space-y-2">
+                            <div class="flex items-start space-x-2">
+                                <i class="fa-solid fa-circle-check text-brand-600 mt-1"></i>
+                                <span>Menyediakan bimbingan hafalan Al-Qur'an dengan ritme yang disesuaikan dengan kemampuan anak.</span>
+                            </div>
+                            <div class="flex items-start space-x-2">
+                                <i class="fa-solid fa-circle-check text-brand-600 mt-1"></i>
+                                <span>Mengajarkan praktik ibadah shalat 5 waktu dan adab harian islami dalam kehidupan seharian.</span>
+                            </div>
+                            <div class="flex items-start space-x-2">
+                                <i class="fa-solid fa-circle-check text-brand-600 mt-1"></i>
+                                <span>Membangun rasa percaya diri anak dalam membaca dan menghafal Al-Qur'an di depan umum.</span>
+                            </div>
+                        </div>
+
+                        <div id="tab-visi" class="tab-content text-sm text-slate-600 hidden space-y-2">
+                            <p>
+                                Menjadi lembaga tahfidz anak terdepan yang melahirkan hafiz/hafizah cilik berjiwa kepemimpinan, berakhlak mulia, serta memiliki kecintaan mendalam terhadap Al-Qur'an dan As-Sunnah.
+                            </p>
+                        </div>
+
+                        <div id="tab-metode" class="tab-content text-sm text-slate-600 hidden space-y-2">
+                            <p class="font-semibold text-slate-800">Metode 3T (Talqin, Tafhim, Tikrar):</p>
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li><strong>Talqin:</strong> Ustadz mendiktekan bacaan tajwid yang presisi kepada anak.</li>
+                                <li><strong>Tafhim:</strong> Penjelasan makna surah secara sederhana melalui cerita bernilai islami.</li>
+                                <li><strong>Tikrar:</strong> Pengulangan berkala yang dikemas dengan permainan edukatif & audio.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- PROGRAM PENDIDIKAN SECTION -->
+    <section id="program" class="py-20 bg-brand-950 text-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="bg-gold-500/20 text-gold-300 text-xs font-bold px-4 py-1.5 rounded-full border border-gold-500/30 uppercase tracking-widest">
+                    Program Unggulan
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
+                    Pilihan Program <span class="gold-gradient-text">Tahfidz & Pembinaan</span>
+                </h2>
+                <p class="text-brand-200 text-sm sm:text-base">
+                    Program kami dirancang bertahap sesuai rentang usia dan kesiapan anak untuk hasil belajar yang optimal.
+                </p>
+            </div>
+
+            <!-- Program Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Program Card 1 -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-gold-400/50 transition duration-300 group">
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="bg-brand-800 text-gold-300 text-xs font-bold px-3 py-1 rounded-full border border-brand-600">Usia 4 - 6 Tahun</span>
+                            <i class="fa-solid fa-star text-gold-400 text-xl group-hover:scale-125 transition"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Program Playful Tahfidz</h3>
+                        <p class="text-brand-200 text-sm mb-6">
+                            Pengenalan Al-Qur'an interaktif lewat gambar, audio murottal ceria, hafalan surah pendek & iqro dasar.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-brand-100 mb-8">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Target Hafalan Surah An-Nas - An-Naba</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Metode Pembelajaran Iqro Fun</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Doa Harian & Adab Makan/Tidur</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Maksimal 6 Santri / Kelompok</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <div class="pt-4 border-t border-brand-800/80 mb-6 flex justify-between items-baseline">
+                            <span class="text-xs text-brand-300">Biaya Program</span>
+                            <span class="text-xl font-extrabold text-gold-400">Rp 250.000 <span class="text-xs font-normal text-brand-300">/bln</span></span>
+                        </div>
+                        <button class="open-program-modal w-full bg-brand-800 hover:bg-gold-500 hover:text-brand-950 text-white font-bold py-3 rounded-xl transition duration-300 text-sm" data-program="Playful Tahfidz (4-6 Thn)">
+                            Detail & Daftar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Program Card 2 (Popular Highlighted) -->
+                <div class="relative bg-gradient-to-b from-brand-900 to-brand-950 border-2 border-gold-400 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl scale-105 group">
+                    <div class="absolute -top-4 right-8 gold-gradient-bg text-brand-950 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                        Paling Favorit
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="bg-gold-500/20 text-gold-300 text-xs font-bold px-3 py-1 rounded-full border border-gold-500/40">Usia 7 - 12 Tahun</span>
+                            <i class="fa-solid fa-crown text-gold-400 text-xl group-hover:scale-125 transition"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Tahfidz Intensive Cilik</h3>
+                        <p class="text-brand-200 text-sm mb-6">
+                            Fokus hafalan Juz 30 & Juz 29 lengkap dengan perbaikan tajwid, makhraj huruf, dan bimbingan shalat khusyu.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-brand-100 mb-8">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Target Hafalan Juz 30 & Juz 29</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Bimbingan Tajwid & Makhraj Standard</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Ujian Wisuda & Sertifikasi Sanad</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Pendampingan Setoran 3x Seminggu</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <div class="pt-4 border-t border-brand-800/80 mb-6 flex justify-between items-baseline">
+                            <span class="text-xs text-brand-300">Biaya Program</span>
+                            <span class="text-xl font-extrabold text-gold-400">Rp 350.000 <span class="text-xs font-normal text-brand-300">/bln</span></span>
+                        </div>
+                        <button class="open-program-modal w-full gold-gradient-bg text-brand-950 font-bold py-3.5 rounded-xl shadow-lg hover:brightness-110 transition duration-300 text-sm" data-program="Tahfidz Intensive Cilik (7-12 Thn)">
+                            Detail & Daftar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Program Card 3 -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-gold-400/50 transition duration-300 group">
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="bg-brand-800 text-gold-300 text-xs font-bold px-3 py-1 rounded-full border border-brand-600">Semua Usia (Private)</span>
+                            <i class="fa-solid fa-user-graduate text-gold-400 text-xl group-hover:scale-125 transition"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Private Home & Online</h3>
+                        <p class="text-brand-200 text-sm mb-6">
+                            Bimbingan eksklusif 1-on-1 dengan Ustadz/Ustadzah ke rumah atau melalui video call interaktif.
+                        </p>
+                        
+                        <ul class="space-y-3 text-sm text-brand-100 mb-8">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Jadwal Fleksibel Menyesuaikan Anak</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Kurikulum Personal Sesuai Kesiapan</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Bimbingan Intensif Akhlak & Ibadah</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-gold-400 mr-2.5"></i> Bebas Biaya Pendaftaran Pertama</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <div class="pt-4 border-t border-brand-800/80 mb-6 flex justify-between items-baseline">
+                            <span class="text-xs text-brand-300">Biaya Program</span>
+                            <span class="text-xl font-extrabold text-gold-400">Rp 500.000 <span class="text-xs font-normal text-brand-300">/bln</span></span>
+                        </div>
+                        <button class="open-program-modal w-full bg-brand-800 hover:bg-gold-500 hover:text-brand-950 text-white font-bold py-3 rounded-xl transition duration-300 text-sm" data-program="Private Home & Online">
+                            Detail & Daftar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- INTERACTIVE HAFALAN CALCULATOR TOOL -->
+    <section id="kalkulator" class="py-20 bg-gradient-to-br from-brand-900 via-brand-950 to-slate-900 text-white relative">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-10 shadow-2xl">
+                
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <span class="bg-gold-500/20 text-gold-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-gold-500/30 uppercase">
+                        Interactive Calculator
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-3">
+                        Simulasi Target Hafalan Al-Qur'an Anak
+                    </h2>
+                    <p class="text-brand-200 text-xs sm:text-sm mt-2">
+                        Hitung estimasi waktu yang dibutuhkan buah hati Anda untuk mengkhatamkan Hafalan Juz 30 berdasarkan durasi latihan harian.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    
+                    <!-- Calculator Inputs -->
+                    <div class="space-y-6 bg-brand-950/80 p-6 rounded-2xl border border-brand-800">
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-200 uppercase mb-2">Usia Anak Sekarang</label>
+                            <select id="calc-age" class="w-full bg-brand-900 border border-brand-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-400">
+                                <option value="4-6">4 - 6 Tahun (Tingkat Pemula)</option>
+                                <option value="7-9" selected>7 - 9 Tahun (Tingkat Menengah)</option>
+                                <option value="10-12">10 - 12 Tahun (Tingkat Lanjutan)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-200 uppercase mb-2">Waktu Latihan Per Hari</label>
+                            <input type="range" id="calc-minutes" min="15" max="90" step="15" value="30" class="w-full accent-gold-500 cursor-pointer">
+                            <div class="flex justify-between text-xs text-brand-300 mt-1">
+                                <span>15 Menit</span>
+                                <span id="calc-min-val" class="text-gold-400 font-bold">30 Menit/Hari</span>
+                                <span>90 Menit</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-200 uppercase mb-2">Target Target Surah</label>
+                            <select id="calc-target" class="w-full bg-brand-900 border border-brand-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-400">
+                                <option value="juz30">Juz 30 Full (37 Surah)</option>
+                                <option value="short">15 Surah Pendek Favorit</option>
+                                <option value="juz29-30">Juz 29 & 30 (59 Surah)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Calculator Result Box -->
+                    <div class="bg-gradient-to-br from-brand-800 to-brand-900 p-8 rounded-2xl border border-gold-400/40 text-center space-y-4 shadow-xl">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-gold-500/20 text-gold-400 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <h4 class="text-brand-200 text-xs font-bold uppercase tracking-widest">Estimasi Waktu Hafalan</h4>
+                        <div class="text-4xl sm:text-5xl font-extrabold gold-gradient-text" id="calc-result-months">
+                            ~ 4 - 6 Bulan
+                        </div>
+                        <p class="text-xs text-brand-200 leading-relaxed px-4" id="calc-result-desc">
+                            Dengan latihan 30 menit sehari & bimbingan 3x seminggu di Little Hafiz Quran, anak dapat menguasai target hafalan dengan percaya diri!
+                        </p>
+                        <div class="pt-4">
+                            <a href="#pendaftaran" class="inline-block gold-gradient-bg text-brand-950 font-bold px-6 py-3 rounded-xl text-xs hover:scale-105 transition shadow">
+                                Wujudkan Target Ini Sekarang
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- GALERI KEGIATAN SECTION -->
+    <section id="kegiatan" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="bg-brand-100 text-brand-800 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                        Dokumentasi
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">
+                        Galeri Kegiatan Santri Little Hafiz
+                    </h2>
+                </div>
+
+                <!-- Gallery Category Filter Buttons -->
+                <div class="flex flex-wrap gap-2 mt-4 md:mt-0" id="gallery-filters">
+                    <button class="gallery-filter-btn active px-4 py-2 rounded-full text-xs font-bold bg-brand-600 text-white shadow" data-filter="all">Semua</button>
+                    <button class="gallery-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-brand-100 hover:text-brand-700" data-filter="tahfidz">Setoran Tahfidz</button>
+                    <button class="gallery-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-brand-100 hover:text-brand-700" data-filter="shalat">Bimbingan Shalat</button>
+                    <button class="gallery-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-brand-100 hover:text-brand-700" data-filter="wisuda">Wisuda Cilik</button>
+                </div>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="gallery-grid">
+                
+                <!-- Item 1 -->
+                <div class="gallery-item tahfidz overflow-hidden rounded-2xl bg-slate-100 relative group cursor-pointer shadow-md">
+                    <img src="https://images.unsplash.com/photo-1584286595398-a59f21d313f5?auto=format&fit=crop&w=600&q=80" alt="Setoran Tahfidz Anak" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div class="text-white">
+                            <span class="text-xs text-gold-400 font-bold uppercase">Setoran Hafalan</span>
+                            <h4 class="font-bold text-base">Bimbingan One-on-One Dengan Ustadzah</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="gallery-item shalat overflow-hidden rounded-2xl bg-slate-100 relative group cursor-pointer shadow-md">
+                    <img src="https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=600&q=80" alt="Praktik Shalat" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div class="text-white">
+                            <span class="text-xs text-gold-400 font-bold uppercase">Bimbingan Shalat</span>
+                            <h4 class="font-bold text-base">Praktik Gerakan & Bacaan Shalat Berjamaah</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="gallery-item wisuda overflow-hidden rounded-2xl bg-slate-100 relative group cursor-pointer shadow-md">
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80" alt="Wisuda Tahfidz" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div class="text-white">
+                            <span class="text-xs text-gold-400 font-bold uppercase">Wisuda Hafiz Cilik</span>
+                            <h4 class="font-bold text-base">Pemberian Mahkota & Sertifikat Hafalan Juz 30</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="gallery-item tahfidz overflow-hidden rounded-2xl bg-slate-100 relative group cursor-pointer shadow-md">
+                    <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80" alt="Game Edukasi Islami" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div class="text-white">
+                            <span class="text-xs text-gold-400 font-bold uppercase">Fun Learning</span>
+                            <h4 class="font-bold text-base">Kuis & Game Murottal Interaktif</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 5 -->
+                <div class="gallery-item shalat overflow-hidden rounded-2xl bg-slate-100 relative group cursor-pointer shadow-md">
+                    <img src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=600&q=80" alt="Doa Bersama" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div class="text-white">
+                            <span class="text-xs text-gold-400 font-bold uppercase">Doa Harian</span>
+                            <h4 class="font-bold text-base">Pembiasaan Adab & Doa Sebelum Belajar</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 6 -->
+                <div class="gallery-item wisuda overflow-hidden rounded-2xl bg-slate-100 relative group cursor-pointer shadow-md">
+                    <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80" alt="Pemberian Sertifikat" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div class="text-white">
+                            <span class="text-xs text-gold-400 font-bold uppercase">Apresiasi Santri</span>
+                            <h4 class="font-bold text-base">Penghargaan Bintang Prestasi Bulanan</h4>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section id="testimoni" class="py-20 bg-slate-50 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="bg-brand-100 text-brand-800 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                    Kata Mereka
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900">
+                    Testimoni Orang Tua Santri
+                </h2>
+                <p class="text-slate-600 text-sm sm:text-base">
+                    Simak pengalaman nyata para orang tua setelah mendaftarkan buah hati di Little Hafiz Quran.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Testimonial 1 -->
+                <div class="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 flex flex-col justify-between relative">
+                    <i class="fa-solid fa-quote-right absolute top-6 right-6 text-brand-100 text-4xl"></i>
+                    <div>
+                        <div class="flex text-amber-400 text-sm space-x-1 mb-4">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6 italic">
+                            "Alhamdulillah, anak saya Aisyah (5 thn) dulu sangat susah kalau diajak muraja'ah. Setelah ikut Little Hafiz, dia malah antusias sendiri minta muraja'ah tiap sore pakai lagu-lagu metodenya."
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-4 border-t border-slate-100">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80" alt="Bunda Aisyah" class="w-12 h-12 rounded-full object-cover border-2 border-brand-500">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">Bunda Aisyah</h4>
+                            <p class="text-xs text-slate-500">Orang Tua Santri Kelas Playful</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 flex flex-col justify-between relative">
+                    <i class="fa-solid fa-quote-right absolute top-6 right-6 text-brand-100 text-4xl"></i>
+                    <div>
+                        <div class="flex text-amber-400 text-sm space-x-1 mb-4">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6 italic">
+                            "Sangat bersyukur mendaftarkan Fathan di program Tahfidz Intensive. Ustadz pengajarnya telaten sekali memperbaiki tajwid dan bacaan shalat Fathan. Sekarang hafalan Juz 30 sudah khatam!"
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-4 border-t border-slate-100">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" alt="Ayah Fathan" class="w-12 h-12 rounded-full object-cover border-2 border-brand-500">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">Ayah Fathan</h4>
+                            <p class="text-xs text-slate-500">Orang Tua Santri Intensive Cilik</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 flex flex-col justify-between relative">
+                    <i class="fa-solid fa-quote-right absolute top-6 right-6 text-brand-100 text-4xl"></i>
+                    <div>
+                        <div class="flex text-amber-400 text-sm space-x-1 mb-4">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6 italic">
+                            "Laporan hafalan mingguan sangat transparan. Kami sebagai orang tua kerja bisa tetap mantau perkembangan hafalan anak lewat update WhatsApp dari tim pengajar."
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-4 border-t border-slate-100">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80" alt="Ibu Sarah" class="w-12 h-12 rounded-full object-cover border-2 border-brand-500">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">Ibu Sarah</h4>
+                            <p class="text-xs text-slate-500">Orang Tua Santri Private Home</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section id="faq" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center mb-12 space-y-3">
+                <span class="bg-brand-100 text-brand-800 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase">FAQ</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900">Pertanyaan Yang Sering Diajukan</h2>
+            </div>
+
+            <!-- Accordion List -->
+            <div class="space-y-4">
+                
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <button class="faq-toggle w-full p-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50 transition">
+                        <span>Apakah program ini cocok untuk anak yang belum bisa baca Iqro sama sekali?</span>
+                        <i class="fa-solid fa-chevron-down text-brand-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden px-5 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                        Ya, sangat cocok! Kami memiliki program Playful Tahfidz yang dirancang khusus untuk pemula. Pembelajaran dimulai dari pengenalan huruf hijaiyah dasar dan metode talqin (mendengarkan & menirukan).
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <button class="faq-toggle w-full p-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50 transition">
+                        <span>Berapa jumlah santri dalam satu kelas?</span>
+                        <i class="fa-solid fa-chevron-down text-brand-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden px-5 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                        Untuk menjaga kualitas & keefektifan pembelajaran, setiap kelas reguler dibatasi maksimal 6-8 santri per Ustadz/Ustadzah. Tersedia juga pilihan program Private 1-on-1.
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <button class="faq-toggle w-full p-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50 transition">
+                        <span>Apakah ada kelas coba gratis (Trial Class)?</span>
+                        <i class="fa-solid fa-chevron-down text-brand-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden px-5 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                        Tentu! Kami menyediakan 1x Sesi Trial Class Gratis agar Ayah & Bunda bisa melihat langsung interaksi anak dengan ustadz/ah pengajar sebelum memutuskan mendaftar.
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <button class="faq-toggle w-full p-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50 transition">
+                        <span>Bagaimana sistem pelaporan hafalan ke orang tua?</span>
+                        <i class="fa-solid fa-chevron-down text-brand-600 transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden px-5 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                        Laporan perkembangan disajikan dalam bentuk Buku Laporan Digital Mutaba'ah yang diperbarui setiap pekan, termasuk catatan kelancaran hafalan, makhraj, dan kehadiran.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FORM PENDAFTARAN & KONTAK SECTION -->
+    <section id="pendaftaran" class="py-20 bg-brand-950 text-white relative islamic-pattern">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Info Text -->
+                <div class="lg:col-span-5 space-y-6">
+                    <span class="bg-gold-500/20 text-gold-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-gold-500/30 uppercase">
+                        Form Pendaftaran
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                        Daftarkan Buah Hati Anda Sekarang
+                    </h2>
+                    <p class="text-brand-200 text-sm leading-relaxed">
+                        Isi formulir di samping untuk mendapatkan info kuota kelas, diskon registrasi, dan konfirmasi jadwal Sesi Trial Gratis.
+                    </p>
+
+                    <div class="space-y-4 pt-4">
+                        <div class="flex items-center space-x-4 p-4 rounded-2xl bg-brand-900/80 border border-brand-800">
+                            <div class="w-10 h-10 rounded-full bg-gold-500/20 text-gold-400 flex items-center justify-center">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">Alamat Pusat</h4>
+                                <p class="text-xs text-brand-300">Jl. Masjid Al-Barokah No. 45, Jakarta Selatan</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4 p-4 rounded-2xl bg-brand-900/80 border border-brand-800">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">Hotline WhatsApp</h4>
+                                <p class="text-xs text-brand-300">+62 812-3456-7890 (Respon Cepat)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Form Container -->
+                <div class="lg:col-span-7">
+                    <div class="bg-white text-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl border border-brand-100">
+                        <h3 class="text-2xl font-bold text-brand-950 mb-6 flex items-center">
+                            <i class="fa-solid fa-pen-to-square text-gold-500 mr-3"></i>
+                            Formulir Pendaftaran Santri Baru
+                        </h3>
+
+                        <form id="registration-form" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Orang Tua *</label>
+                                    <input type="text" id="parent-name" required placeholder="Contoh: Ayah Hendra" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor WhatsApp *</label>
+                                    <input type="tel" id="whatsapp-num" required placeholder="0812xxxxxxx" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Anak *</label>
+                                    <input type="text" id="child-name" required placeholder="Contoh: Rayyan" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Usia Anak (Tahun) *</label>
+                                    <input type="number" id="child-age" required min="3" max="15" placeholder="Contoh: 6" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilihan Program *</label>
+                                <select id="program-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600">
+                                    <option value="">-- Pilih Program --</option>
+                                    <option value="Playful Tahfidz (4-6 Thn)">Playful Tahfidz (Usia 4-6 Thn)</option>
+                                    <option value="Tahfidz Intensive Cilik (7-12 Thn)">Tahfidz Intensive Cilik (Usia 7-12 Thn)</option>
+                                    <option value="Private Home & Online">Private Home & Online</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Catatan Tambahan / Pertanyaan</label>
+                                <textarea id="notes" rows="3" placeholder="Contoh: Anak belum pernah belajar iqro..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full gold-gradient-bg text-brand-950 font-extrabold py-4 rounded-xl shadow-lg hover:brightness-105 transition duration-300 text-base flex items-center justify-center space-x-2">
+                                <span>Kirim Pendaftaran via WhatsApp</span>
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER SECTION -->
+    <footer class="bg-brand-950 border-t border-brand-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl gold-gradient-bg flex items-center justify-center text-brand-950 font-bold">
+                            <i class="fa-solid fa-kaaba"></i>
+                        </div>
+                        <span class="text-lg font-bold">Little Hafiz Quran</span>
+                    </div>
+                    <p class="text-xs text-brand-300 leading-relaxed">
+                        Lembaga pendidikan tahfidz anak menyenangkan, berfokus pada hafalan Al-Qur'an, bimbingan shalat, dan pembinaan karakter islami sejak dini.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-gold-400 uppercase tracking-wider mb-4">Navigasi Quick</h4>
+                    <ul class="space-y-2 text-xs text-brand-200">
+                        <li><a href="#beranda" class="hover:text-gold-400 transition">Beranda Utama</a></li>
+                        <li><a href="#tentang" class="hover:text-gold-400 transition">Tentang Kami</a></li>
+                        <li><a href="#program" class="hover:text-gold-400 transition">Program Tahfidz</a></li>
+                        <li><a href="#kalkulator" class="hover:text-gold-400 transition">Simulasi Target Hafalan</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-gold-400 uppercase tracking-wider mb-4">Program Utama</h4>
+                    <ul class="space-y-2 text-xs text-brand-200">
+                        <li><a href="#program" class="hover:text-gold-400 transition">Playful Tahfidz (4-6 Thn)</a></li>
+                        <li><a href="#program" class="hover:text-gold-400 transition">Tahfidz Intensive Cilik (7-12 Thn)</a></li>
+                        <li><a href="#program" class="hover:text-gold-400 transition">Bimbingan Shalat & Doa</a></li>
+                        <li><a href="#program" class="hover:text-gold-400 transition">Kelas Private Home & Online</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-gold-400 uppercase tracking-wider mb-4">Ikuti Kami</h4>
+                    <p class="text-xs text-brand-300 mb-4">Dapatkan konten edukasi islami anak harian di media sosial kami.</p>
+                    <div class="flex space-x-3">
+                        <a href="#" class="w-9 h-9 rounded-full bg-brand-900 border border-brand-700 flex items-center justify-center text-gold-400 hover:bg-gold-500 hover:text-brand-950 transition">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-brand-900 border border-brand-700 flex items-center justify-center text-gold-400 hover:bg-gold-500 hover:text-brand-950 transition">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-brand-900 border border-brand-700 flex items-center justify-center text-gold-400 hover:bg-gold-500 hover:text-brand-950 transition">
+                            <i class="fa-brands fa-facebook"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pt-8 border-t border-brand-900 text-center text-xs text-brand-400 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p>&copy; 2026 Little Hafiz Quran. All rights reserved.</p>
+                <p class="font-arabic text-sm text-gold-400">خيركم من تعلم القرآن وعلمه</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PROGRAM DETAIL MODAL -->
+    <div id="program-modal" class="fixed inset-0 bg-brand-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative animate-fade-in">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <span class="bg-brand-100 text-brand-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Detail Program</span>
+            <h3 class="text-2xl font-bold text-slate-900 mt-2 mb-4" id="modal-program-title">Program Title</h3>
+            <div class="text-sm text-slate-600 space-y-3 mb-6">
+                <p id="modal-program-desc">Deskripsi lengkap program akan muncul di sini.</p>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 class="font-bold text-slate-800 text-xs uppercase mb-2">Fasilitas Termasuk:</h4>
+                    <ul class="space-y-1 text-xs text-slate-600">
+                        <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Buku Mutaba'ah Hafalan Digital</li>
+                        <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Sertifikat Kelulusan Sanad Juz</li>
+                        <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Akses Media Audio Murottal Interaktif</li>
+                    </ul>
+                </div>
+            </div>
+            <a href="#pendaftaran" id="modal-action-btn" class="block text-center gold-gradient-bg text-brand-950 font-bold py-3.5 rounded-xl shadow hover:brightness-105 transition">
+                Daftar Program Ini Sekarang
+            </a>
+        </div>
+    </div>
+
+    <!-- JQUERY INTERACTIVE LOGIC -->
+    <script>
+        $(document.body).ready(function() {
+            
+            $('#mobile-menu-btn').on('click', function() {
+                $('#mobile-menu').toggleClass('hidden');
+                $('#menu-icon').toggleClass('fa-bars fa-xmark');
+            });
+
+            $('.mobile-nav-link').on('click', function() {
+                $('#mobile-menu').addClass('hidden');
+                $('#menu-icon').addClass('fa-bars').removeClass('fa-xmark');
+            });
+
+            $('.about-tab').on('click', function() {
+                const target = $(this).data('target');
+                $('.about-tab').removeClass('border-brand-600 text-brand-700').addClass('border-transparent text-slate-500');
+                $(this).addClass('border-brand-600 text-brand-700').removeClass('border-transparent text-slate-500');
+                
+                $('.tab-content').addClass('hidden');
+                $('#tab-' + target).removeClass('hidden');
+            });
+
+            function calculateHafalan() {
+                let age = $('#calc-age').val();
+                let mins = parseInt($('#calc-minutes').val());
+                let target = $('#calc-target').val();
+
+                $('#calc-min-val').text(mins + ' Menit/Hari');
+
+                let baseMonths = 6;
+                if(target === 'short') baseMonths = 2;
+                if(target === 'juz29-30') baseMonths = 12;
+
+                // Adjust by time practice
+                if(mins >= 60) baseMonths = Math.max(1, Math.round(baseMonths * 0.5));
+                else if(mins >= 45) baseMonths = Math.max(2, Math.round(baseMonths * 0.7));
+                else if(mins <= 15) baseMonths = Math.round(baseMonths * 1.4);
+
+                $('#calc-result-months').text('~ ' + baseMonths + ' - ' + (baseMonths + 2) + ' Bulan');
+            }
+
+            $('#calc-minutes, #calc-age, #calc-target').on('input change', calculateHafalan);
+
+            $('.gallery-filter-btn').on('click', function() {
+                const filter = $(this).data('filter');
+                $('.gallery-filter-btn').removeClass('active bg-brand-600 text-white shadow').addClass('bg-slate-100 text-slate-600');
+                $(this).addClass('active bg-brand-600 text-white shadow').removeClass('bg-slate-100 text-slate-600');
+
+                if(filter === 'all') {
+                    $('.gallery-item').fadeIn(300);
+                } else {
+                    $('.gallery-item').hide();
+                    $('.gallery-item.' + filter).fadeIn(300);
+                }
+            });
+
+            $('.faq-toggle').on('click', function() {
+                const content = $(this).next('.faq-content');
+                const icon = $(this).find('i');
+                
+                $('.faq-content').not(content).slideUp().prev().find('i').removeClass('rotate-180');
+                content.slideToggle();
+                icon.toggleClass('rotate-180');
+            });
+
+            $('.open-program-modal').on('click', function() {
+                const progName = $(this).data('program');
+                $('#modal-program-title').text(progName);
+                $('#modal-program-desc').text('Program ' + progName + ' dirancang khusus untuk mengoptimalkan potensi hafalan Al-Qur\'an anak dengan metode pembelajaran terstruktur, ramah anak, dan evaluasi rutin.');
+                $('#program-modal').removeClass('hidden');
+            });
+
+            $('#close-modal-btn, #modal-action-btn').on('click', function() {
+                $('#program-modal').addClass('hidden');
+            });
+
+            $('#registration-form').on('submit', function(e) {
+                e.preventDefault();
+                const parent = $('#parent-name').val();
+                const phone = $('#whatsapp-num').val();
+                const child = $('#child-name').val();
+                const age = $('#child-age').val();
+                const program = $('#program-select').val();
+                const notes = $('#notes').val();
+
+                const text = `Halo Little Hafiz Quran, saya *${parent}* (WA: ${phone}) bermaksud mendaftarkan anak saya:\n- *Nama Anak:* ${child}\n- *Usia:* ${age} Tahun\n- *Pilihan Program:* ${program}\n- *Catatan:* ${notes || '-'}`;
+
+                const encoded = encodeURIComponent(text);
+                window.open(`https://wa.me/6281234567890?text=${encoded}`, '_blank');
+            });
+
+            let animated = false;
+            $(window).on('scroll', function() {
+                if(!animated && $('#beranda').length) {
+                    $('.counter-value').each(function() {
+                        const $this = $(this);
+                        const countTo = parseInt($this.attr('data-target'));
+                        $({ countNum: 0 }).animate({ countNum: countTo }, {
+                            duration: 2000,
+                            easing: 'swing',
+                            step: function() {
+                                $this.text(Math.floor(this.countNum) + '+');
+                            },
+                            complete: function() {
+                                $this.text(this.countNum + '+');
+                            }
+                        });
+                    });
+                    animated = true;
+                }
+            });
+
+            // Trigger scroll check once on load
+            $(window).trigger('scroll');
+
+        });
+    </script>
+</body>
+</html>
