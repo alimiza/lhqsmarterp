@@ -5,3 +5,7 @@
 tags
 node_modules
 __pycache__
+
+# Built by the frontend
+smartapp/public/frontend
+smartapp/www/smartapp.html

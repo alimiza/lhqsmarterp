@@ -259,4 +259,7 @@ after_migrate = "smartapp.setup.setup_roles_and_dashboards"
 # Website route rules: map kebab-case URL to filesystem path
 website_route_rules = [
 	{"from_route": "/dashboard/wali-santri", "to_route": "dashboard/wali_santri"},
+	{"from_route": "/smartapp/<path:app_path>", "to_route": "smartapp"},
 ]
+
+website_route_rules = [{'from_route': '/dashboard/<path:app_path>', 'to_route': 'dashboard'},]

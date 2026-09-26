@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "scripts": {
+    "postinstall": "cd frontend && npm install && (cd dashboard && yarn install)",
+    "dev": "cd frontend && npm run dev && (cd dashboard && yarn dev)",
+    "build": "cd frontend && npm run build && (cd dashboard && yarn build)"
+  }
+}
